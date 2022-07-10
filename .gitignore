@@ -1,0 +1,10 @@
+# editors
+./vscode
+./idea
+
+# rustc and cargo
+/target
+/Cargo.lock
+
+# rust fmt
+**/*.rs.bk

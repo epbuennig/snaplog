@@ -1,0 +1,15 @@
+[package]
+name = "snaplog"
+authors = ["Erik Bünnig <inquiries@epbuennig.me>"]
+description = "A library for easily recording changes to values"
+keywords = ["changelog", "snapshot", "changes"]
+categories = ["algorithms", "data-structures"]
+
+repository = "https://github.com/epbuennig/snaplog/"
+license = "MIT"
+readme = "README.md"
+
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
