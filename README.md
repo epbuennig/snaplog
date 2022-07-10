@@ -1,5 +1,5 @@
 # Snaplog
-Snap log is a library that provides the `Snaplog` type, a struct that records changes to a value of
+Snaplog is a library that provides the `Snaplog` type, a struct that records changes to a value of
 type `T`.
 
 # Examples

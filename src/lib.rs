@@ -1,4 +1,4 @@
-//! Snap log is a library that provides the [`Snaplog`] type, a struct that records changes to a
+//! Snaplog is a library that provides the [`Snaplog`] type, a struct that records changes to a
 //! value of type `T` by saving a snapshot of the value after each change.
 //!
 //! # Examples

@@ -2,7 +2,8 @@
 
 ---
 ## [Unreleased]
-
+### Fixed
+- fixed typo in README and docs
 
 ---
 ## [0.1.0] - 2022-07-10
