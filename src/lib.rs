@@ -66,6 +66,34 @@ pub enum Select {
     Current,
 }
 
+const INVARIANT_UNWRAP: &str = "must have at least one element";
+
+impl Select {
+    fn index_into<'s, T>(&self, slice: &'s [T]) -> &'s T {
+        match self {
+            Select::Initial => slice.first().expect(INVARIANT_UNWRAP),
+            Select::At(idx) => &slice[*idx],
+            Select::Current => slice.last().expect(INVARIANT_UNWRAP),
+        }
+    }
+
+    fn index_into_mut<'s, T>(&self, slice: &'s mut [T]) -> &'s mut T {
+        match self {
+            Select::Initial => slice.first_mut().expect(INVARIANT_UNWRAP),
+            Select::At(idx) => &mut slice[*idx],
+            Select::Current => slice.last_mut().expect(INVARIANT_UNWRAP),
+        }
+    }
+
+    fn index_into_remove<T>(&self, slice: &mut Vec<T>) -> T {
+        match self {
+            Select::Initial => slice.swap_remove(0),
+            Select::At(idx) => slice.swap_remove(*idx),
+            Select::Current => slice.pop().expect(INVARIANT_UNWRAP),
+        }
+    }
+}
+
 /// An [Error][std::error::Error] that occurs when trying to create a [`Snaplog`] from an empty
 /// [`Vec`].
 pub struct EmptyHistoryError(());
@@ -319,9 +347,7 @@ impl<T> Snaplog<T> {
     /// ```
     #[inline]
     pub fn initial(&self) -> &T {
-        self.history
-            .first()
-            .expect("must have at least one element")
+        self.history.first().expect(INVARIANT_UNWRAP)
     }
 
     /// Returns the current element, that is the last recorded change or the initial element if
@@ -338,7 +364,7 @@ impl<T> Snaplog<T> {
     /// ```
     #[inline]
     pub fn current(&self) -> &T {
-        self.history.last().expect("must have at least one element")
+        self.history.last().expect(INVARIANT_UNWRAP)
     }
 
     /// Returns the full history recorded in this [`Snaplog`], including the initial element.
@@ -506,6 +532,51 @@ impl<T> Snaplog<T> {
         self.history.iter_mut()
     }
 
+    /// Unwrap the [`Snaplog`] into it's initial snapshot.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::Snaplog;
+    /// let mut snaplog = Snaplog::new("a");
+    ///
+    /// snaplog.record_change(|_| "b");
+    /// snaplog.record_change(|_| "c");
+    /// assert_eq!(snaplog.into_initial(), "a");
+    /// ```
+    pub fn into_initial(mut self) -> T {
+        self.history.swap_remove(0)
+    }
+
+    /// Unwrap the [`Snaplog`] into it's current snapshot.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::Snaplog;
+    /// let mut snaplog = Snaplog::new("a");
+    ///
+    /// snaplog.record_change(|_| "b");
+    /// snaplog.record_change(|_| "c");
+    /// assert_eq!(snaplog.into_current(), "c");
+    /// ```
+    pub fn into_current(mut self) -> T {
+        self.history.pop().expect(INVARIANT_UNWRAP)
+    }
+
+    /// Unwrap the [`Snaplog`] into it's current snapshot.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::{Snaplog, Select};
+    /// let mut snaplog = Snaplog::new("a");
+    ///
+    /// snaplog.record_change(|_| "b");
+    /// snaplog.record_change(|_| "c");
+    /// assert_eq!(snaplog.into_snapshot_at(Select::At(1)), "b");
+    /// ```
+    pub fn into_snapshot_at(mut self, select: Select) -> T {
+        select.index_into_remove(&mut self.history)
+    }
+
     /// Unwrap the [`Snaplog`] into it's history.
     ///
     /// # Examples
@@ -637,11 +708,14 @@ impl<T> std::ops::Index<Select> for Snaplog<T> {
 
     #[inline]
     fn index(&self, index: Select) -> &Self::Output {
-        match index {
-            Select::Initial => self.initial(),
-            Select::At(idx) => &self.history[idx],
-            Select::Current => self.current(),
-        }
+        index.index_into(&self.history)
+    }
+}
+
+impl<T> std::ops::IndexMut<Select> for Snaplog<T> {
+    #[inline]
+    fn index_mut(&mut self, index: Select) -> &mut Self::Output {
+        index.index_into_mut(&mut self.history)
     }
 }
 

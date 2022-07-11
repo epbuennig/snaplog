@@ -8,6 +8,8 @@
 - `Snaplog::from_vec` fallible `try_*`, unchecked `*_unchecked` and panicing version
 - `Snaplog::from_iter` fallible `try_*`, unchecked `*_unchecked` and panicing version
 - `Iter`, `IterMut`, `IntoIter` type aliases, iterator implementations
+- `IndexMut` impl for `Snaplog`
+- `into_initial`, `into_snapshot_at`, `into_current`
 
 ### Changes
 - more consistent documentation
