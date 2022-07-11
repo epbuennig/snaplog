@@ -2,6 +2,10 @@
 
 ---
 ## [Unreleased]
+
+
+---
+## [0.2.0] - 2022-07-11
 ### Added
 - `Snaplog::record` (previously took change, now takes snapshot)
 - `Snaplog::record_all` (previously took changes, now takes snapshots)
@@ -21,10 +25,12 @@
 ### Fixed
 - fixed typo in README and docs
 
+
 ---
 ## [0.1.0] - 2022-07-10
 Initial Release
 
 
-[Unreleased]: https://github.com/epbuennig/snaplog/compare/v0.1.0...master
+[Unreleased]: https://github.com/epbuennig/snaplog/compare/v0.2.0...master
+[0.2.0]: https://github.com/epbuennig/snaplog/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/epbuennig/snaplog/compare/master...v0.1.0
