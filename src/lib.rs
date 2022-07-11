@@ -200,8 +200,9 @@ impl<T> Snaplog<T> {
     /// ```
     #[inline]
     pub fn initial(&self) -> &T {
-        // SAFETY: always has at least one element
-        unsafe { self.history.get_unchecked(0) }
+        self.history
+            .first()
+            .expect("must have at least one element")
     }
 
     /// Returns the current element, that is the last recorded change or the initial element if
@@ -218,8 +219,7 @@ impl<T> Snaplog<T> {
     /// ```
     #[inline]
     pub fn current(&self) -> &T {
-        // SAFETY: always has at least one element
-        unsafe { self.history.last().unwrap_unchecked() }
+        self.history.last().expect("must have at least one element")
     }
 
     /// Returns the full history recorded in this [`Snaplog`], including the initial element.
@@ -427,10 +427,8 @@ impl<T: PartialEq> std::cmp::PartialEq for Snaplog<T> {
             // if they hav the same length they must both have changes if one has
             if self.has_changes() {
                 (self.history.last() == other.history.last())
-                    && unsafe {
-                        self.history.get_unchecked(1..self.history.len() - 1)
-                            == other.history.get_unchecked(1..other.history.len() - 1)
-                    }
+                    && (self.history[1..self.history.len() - 1]
+                        == other.history[1..other.history.len() - 1])
             } else {
                 true // no changes and initials are equal
             }
