@@ -7,6 +7,7 @@
 - `Snaplog::record_all` (previously took changes, now takes snapshots)
 - `Snaplog::from_vec` fallible `try_*`, unchecked `*_unchecked` and panicing version
 - `Snaplog::from_iter` fallible `try_*`, unchecked `*_unchecked` and panicing version
+- `Iter`, `IterMut`, `IntoIter` type aliases, iterator implementations
 
 ### Changes
 - more consistent documentation

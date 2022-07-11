@@ -463,6 +463,49 @@ impl<T> Snaplog<T> {
         self.history.drain(1..);
     }
 
+    /// Returns an iterator over references of the whole underling history.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::Snaplog;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let mut snaplog = Snaplog::try_from_iter(0..=10)?;
+    ///
+    /// let mut copy = vec![];
+    /// for &snapshot in snaplog.iter() {
+    ///     copy.push(snapshot);
+    /// }
+    ///
+    /// assert_eq!(copy, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    /// # Ok(())
+    /// # }
+    /// ```
+    #[inline]
+    pub fn iter(&self) -> Iter<'_, T> {
+        self.history.iter()
+    }
+
+    /// Returns an iterator over mutable references of the whole underling history.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::Snaplog;
+    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// let mut snaplog = Snaplog::try_from_iter(0..=10)?;
+    ///
+    /// for snapshot in snaplog.iter_mut().filter(|&&mut n| n % 2 == 0) {
+    ///     *snapshot = 2;
+    /// }
+    ///
+    /// assert_eq!(snaplog.history(), [2, 1, 2, 3, 2, 5, 2, 7, 2, 9, 2]);
+    /// # Ok(())
+    /// # }
+    /// ```
+    #[inline]
+    pub fn iter_mut(&mut self) -> IterMut<'_, T> {
+        self.history.iter_mut()
+    }
+
     /// Unwrap the [`Snaplog`] into it's history.
     ///
     /// # Examples
@@ -553,6 +596,7 @@ impl<T> Snaplog<T> {
     }
 }
 
+// first class traits
 impl<T: PartialEq> std::cmp::PartialEq for Snaplog<T> {
     fn eq(&self, other: &Self) -> bool {
         // it is assumed that inequality is more common than equality
@@ -601,6 +645,102 @@ impl<T> std::ops::Index<Select> for Snaplog<T> {
     }
 }
 
+// iter
+impl<T> std::iter::Extend<T> for Snaplog<T> {
+    fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
+        self.history.extend(iter);
+    }
+}
+
+// TODO: try_from_itertor, this is likely blocked by `try_trait_v2`
+// impl<T> std::iter::FromIterator<T> for Snaplog<T> {
+//     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+//         // Self::try_from_iter(iter)
+//         unimplemented!("is not infallible")
+//     }
+// }
+
+/// A type alias for [`std::slice::Iter`].
+///
+/// # Examples
+/// ```
+/// # use snaplog::Snaplog;
+/// let snaplog = Snaplog::new(());
+///
+/// for snapshot in snaplog.into_iter() {
+///     let s: () = snapshot;
+/// }
+///
+/// let snaplog = Snaplog::new(());
+///
+/// for snapshot in snaplog {
+///     let s: () = snapshot;
+/// }
+/// ```
+type IntoIter<T> = std::vec::IntoIter<T>;
+
+impl<T> IntoIterator for Snaplog<T> {
+    type Item = T;
+    type IntoIter = IntoIter<T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.history.into_iter()
+    }
+}
+
+/// A type alias for [`std::slice::Iter`].
+///
+/// # Examples
+/// ```
+/// # use snaplog::Snaplog;
+/// let snaplog = Snaplog::new(());
+///
+/// for snapshot in snaplog.iter() {
+///     let s: &() = snapshot;
+/// }
+///
+/// for snapshot in &snaplog {
+///     let s: &() = snapshot;
+/// }
+/// ```
+type Iter<'cl, T> = std::slice::Iter<'cl, T>;
+
+impl<'cl, T> IntoIterator for &'cl Snaplog<T> {
+    type Item = &'cl T;
+    type IntoIter = Iter<'cl, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
+/// A type alias for [`std::slice::IterMut`].
+///
+/// # Examples
+/// ```
+/// # use snaplog::Snaplog;
+/// let mut snaplog = Snaplog::new(());
+///
+/// for snapshot in snaplog.iter_mut() {
+///     let s: &mut () = snapshot;
+/// }
+///
+/// for snapshot in &mut snaplog {
+///     let s: &mut () = snapshot;
+/// }
+/// ```
+type IterMut<'cl, T> = std::slice::IterMut<'cl, T>;
+
+impl<'cl, T> IntoIterator for &'cl mut Snaplog<T> {
+    type Item = &'cl mut T;
+    type IntoIter = IterMut<'cl, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter_mut()
+    }
+}
+
+// conversions
 impl<T> From<T> for Snaplog<T> {
     #[inline]
     fn from(initial: T) -> Self {
