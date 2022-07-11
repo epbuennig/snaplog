@@ -28,11 +28,7 @@
 //! # }
 //! ```
 
-#![warn(
-    clippy::missing_panics_doc,
-    clippy::missing_errors_doc,
-    rustdoc::missing_doc_code_examples
-)]
+#![warn(clippy::missing_panics_doc, clippy::missing_errors_doc)]
 #![deny(missing_docs, missing_debug_implementations, unsafe_op_in_unsafe_fn)]
 
 /// Select a snapshot in a snaplog.
