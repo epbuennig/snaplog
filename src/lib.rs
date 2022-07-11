@@ -13,8 +13,8 @@
 //!
 //! assert_eq!(snaplog.has_changes(), true);
 //!
-//! snaplog.record(|prev| format!("{prev}-copy"));
-//! snaplog.record(|_| "/path/file".to_string());
+//! snaplog.record_change(|prev| format!("{prev}-copy"));
+//! snaplog.record_change(|_| "/path/file".to_string());
 //!
 //! assert_eq!(snaplog[Select::Initial], "/path/to/file");
 //! assert_eq!(snaplog[Select::At(3)],   "/path/file-backup-copy");
@@ -43,7 +43,7 @@
 /// ```
 /// # use snaplog::{Select, Snaplog};
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// let mut snaplog = Snaplog::from_history((0..=10).map(|n| n * 2).collect())?;
+/// let mut snaplog = Snaplog::try_from_iter((0..=10).map(|n| n * 2))?;
 ///
 /// assert_eq!(snaplog[Select::Initial], 0);
 /// assert_eq!(snaplog[Select::At(0)],   0);
@@ -56,13 +56,13 @@
 /// ```
 #[derive(Debug, Clone, Copy)]
 pub enum Select {
-    /// The initial snapshot before all changes.
+    /// Select the initial snapshot before all changes.
     Initial,
 
-    /// The snapshot after `n` changes.
+    /// Select the snapshot after `n` changes.
     At(usize),
 
-    /// The current snapshot after all changes.
+    /// Select the current snapshot after all changes.
     Current,
 }
 
@@ -85,7 +85,8 @@ impl std::fmt::Display for EmptyHistoryError {
 impl std::error::Error for EmptyHistoryError {}
 
 /// A struct for recording the history of changes done to a given `T` by storing a snapshot after
-/// each change. See [module level documentation][crate] for examples.
+/// each change. See [module level documentation][crate] for examples. The history of snapshots is
+/// stored in [`Vec`] in ascending order, that means the first element is the initial element.
 #[derive(Debug, Clone)]
 #[repr(transparent)]
 pub struct Snaplog<T> {
@@ -110,7 +111,7 @@ impl<T> Snaplog<T> {
         }
     }
 
-    /// Creates a new [`Snaplog`] from the given `history`.
+    /// Creates a new [`Snaplog`] for the given `history` backing vector.
     ///
     /// # Errors
     /// Returns an error if `history` was empty.
@@ -118,16 +119,120 @@ impl<T> Snaplog<T> {
     /// # Examples
     /// ```
     /// # use snaplog::Snaplog;
-    /// assert!(Snaplog::from_history(vec![0]).is_ok());
-    /// assert!(Snaplog::<()>::from_history(vec![]).is_err());
+    /// assert!(Snaplog::try_from_vec(vec![0]).is_ok());
+    /// assert!(Snaplog::<()>::try_from_vec(vec![]).is_err());
     /// ```
     #[inline]
-    pub fn from_history(history: Vec<T>) -> Result<Self, EmptyHistoryError> {
+    pub fn try_from_vec(history: Vec<T>) -> Result<Self, EmptyHistoryError> {
         if history.is_empty() {
             Err(EmptyHistoryError(()))
         } else {
             Ok(Self { history })
         }
+    }
+
+    /// Creates a new [`Snaplog`] for the given `history` backing vector.
+    ///
+    /// # Errors
+    /// Returns an error if `history` was empty.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::Snaplog;
+    /// let snaplog = Snaplog::from_vec(vec![0]);
+    /// ```
+    ///
+    /// This panics:
+    /// ```should_panic
+    /// # use snaplog::Snaplog;
+    /// let snaplog: Snaplog<i32> = Snaplog::from_vec(vec![]);
+    /// ```
+    #[inline]
+    pub fn from_vec(history: Vec<T>) -> Self {
+        match Self::try_from_vec(history) {
+            Ok(this) => this,
+            Err(_) => panic!("history must not be empty"),
+        }
+    }
+
+    /// Creates a new [`Snaplog`] from the given `history`. The elements are collected into a
+    /// [`Vec`] the if you already have a vec at hand use [`from_vec`][Self::try_from_vec]. The
+    /// first element is used as the initial element.
+    ///
+    /// # Errors
+    /// Returns an error if `history` was empty.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::Snaplog;
+    /// assert!(Snaplog::try_from_iter(0..=10).is_ok());
+    /// assert!(Snaplog::<i32>::try_from_iter(std::iter::empty()).is_err());
+    /// ```
+    #[inline]
+    pub fn try_from_iter<I>(history: I) -> Result<Self, EmptyHistoryError>
+    where
+        I: Iterator<Item = T>,
+    {
+        Self::try_from_vec(history.collect())
+    }
+
+    /// Creates a new [`Snaplog`] from the given `history`. The elements are collected into a
+    /// [`Vec`] the if you already have a vec at hand use [`from_vec`][Self::from_vec]. The first
+    /// element is used as the initial element.
+    ///
+    /// # Panics
+    /// Panics if `history` was empty.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::Snaplog;
+    /// let snaplog = Snaplog::from_iter(0..=10);
+    /// ```
+    ///
+    /// This panics:
+    /// ```should_panic
+    /// # use snaplog::Snaplog;
+    /// let snaplog: Snaplog<i32> = Snaplog::from_iter(std::iter::empty());
+    /// ```
+    #[inline]
+    pub fn from_iter<I>(history: I) -> Self
+    where
+        I: Iterator<Item = T>,
+    {
+        Self::from_vec(history.collect())
+    }
+
+    /// Records a snapshot in this [`Snaplog`].
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::Snaplog;
+    /// let mut snaplog = Snaplog::new("a");
+    ///
+    /// snaplog.record("b");
+    /// snaplog.record("c");
+    /// assert_eq!(snaplog.history(), ["a", "b", "c"]);
+    /// ```
+    #[inline]
+    pub fn record(&mut self, snapshot: T) {
+        self.history.push(snapshot);
+    }
+
+    /// Records multiple snapshots in this [`Snaplog`].
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::Snaplog;
+    /// let mut snaplog = Snaplog::new("a");
+    ///
+    /// snaplog.record_all(["b", "c", "d"]);
+    /// assert_eq!(snaplog.history(), ["a", "b", "c", "d"]);
+    /// ```
+    pub fn record_all<I>(&mut self, snapshots: I)
+    where
+        I: IntoIterator<Item = T>,
+    {
+        self.history.extend(snapshots);
     }
 
     /// Records a change to the current element in this [`Snaplog`].
@@ -137,17 +242,31 @@ impl<T> Snaplog<T> {
     /// # use snaplog::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record(|prev| { assert_eq!(prev, &"a"); "b" });
-    /// snaplog.record(|prev| { assert_eq!(prev, &"b"); "c" });
+    /// snaplog.record_change(|prev| { assert_eq!(prev, &"a"); "b" });
+    /// snaplog.record_change(|prev| { assert_eq!(prev, &"b"); "c" });
     /// assert_eq!(snaplog.history(), ["a", "b", "c"]);
     /// ```
     #[inline]
-    pub fn record<F>(&mut self, mut f: F)
+    pub fn record_change<F>(&mut self, mut f: F)
     where
         F: FnMut(&T) -> T,
     {
         self.history.push(f(self.current()));
     }
+
+    // NOTE: this may be superseded by an impl using a single Generator that takes the current arg
+    // and yields the next, but it would have to be some kind of generator that can give a goos size
+    // estimation which in turn would hurt the ergonomics
+    //
+    // this impl:
+    // pub fn record_changes_all<G>(&mut self, generator: G)
+    //     where for<'t> G: Generator<&'t T, Yield = T, Return = ()>
+    //
+    // came with live time problems when I tested it out and using it with generator syntax eg.:
+    // let snapshot = Snapshot::new("initial".to_string());
+    // snapshot.record_changes_all(|prev| yield format!("{prev}-edit"));
+    //
+    // the current impl is the closest thing to an ergonomic size hint generator
 
     /// Records multiple successive changes to the current element in this [`Snaplog`].
     ///
@@ -156,10 +275,10 @@ impl<T> Snaplog<T> {
     /// # use snaplog::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record_all(&mut ["b", "c", "d"], |change, _| *change);
+    /// snaplog.record_changes_all(&mut ["b", "c", "d"], |change, _| *change);
     /// assert_eq!(snaplog.history(), ["a", "b", "c", "d"]);
     /// ```
-    pub fn record_all<F, M>(&mut self, mutations: &mut [M], mut f: F)
+    pub fn record_changes_all<F, M>(&mut self, mutations: &mut [M], mut f: F)
     where
         F: FnMut(&mut M, &T) -> T,
     {
@@ -178,8 +297,8 @@ impl<T> Snaplog<T> {
     /// let mut snaplog = Snaplog::new("a");
     ///
     /// assert_eq!(snaplog.has_changes(), false);
-    /// snaplog.record(|_| "b");
-    /// snaplog.record(|_| "c");
+    /// snaplog.record_change(|_| "b");
+    /// snaplog.record_change(|_| "c");
     /// assert_eq!(snaplog.has_changes(), true);
     /// ```
     #[inline]
@@ -194,8 +313,8 @@ impl<T> Snaplog<T> {
     /// # use snaplog::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record(|_| "b");
-    /// snaplog.record(|_| "c");
+    /// snaplog.record_change(|_| "b");
+    /// snaplog.record_change(|_| "c");
     /// assert_eq!(snaplog.initial(), &"a");
     /// ```
     #[inline]
@@ -213,8 +332,8 @@ impl<T> Snaplog<T> {
     /// # use snaplog::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record(|_| "b");
-    /// snaplog.record(|_| "c");
+    /// snaplog.record_change(|_| "b");
+    /// snaplog.record_change(|_| "c");
     /// assert_eq!(snaplog.current(), &"c");
     /// ```
     #[inline]
@@ -229,8 +348,8 @@ impl<T> Snaplog<T> {
     /// # use snaplog::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record(|_| "b");
-    /// snaplog.record(|_| "c");
+    /// snaplog.record_change(|_| "b");
+    /// snaplog.record_change(|_| "c");
     /// assert_eq!(snaplog.history(), ["a", "b", "c"]);
     /// ```
     #[inline]
@@ -244,7 +363,7 @@ impl<T> Snaplog<T> {
     /// ```
     /// # use snaplog::Snaplog;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let mut snaplog = Snaplog::from_history((0..=10).collect())?;
+    /// let mut snaplog = Snaplog::try_from_iter(0..=10)?;
     /// let history = snaplog.history_mut();
     ///
     /// history[0] = 10;
@@ -254,7 +373,7 @@ impl<T> Snaplog<T> {
     /// ```
     #[inline]
     pub fn history_mut(&mut self) -> &mut [T] {
-        &mut self.history
+        self.history.as_mut_slice()
     }
 
     /// Drains the history in the specified range, a left open range is interpreted as starting
@@ -268,7 +387,7 @@ impl<T> Snaplog<T> {
     /// ```
     /// # use snaplog::Snaplog;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let mut snaplog = Snaplog::from_history((0..=10).collect())?;
+    /// let mut snaplog = Snaplog::try_from_iter(0..=10)?;
     ///
     /// snaplog.drain(2..=8);
     /// assert_eq!(snaplog.history(), [0, 1, 9, 10]);
@@ -279,7 +398,7 @@ impl<T> Snaplog<T> {
     /// ```
     /// # use snaplog::Snaplog;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// # let mut snaplog = Snaplog::from_history((0..=10).collect())?;
+    /// # let mut snaplog = Snaplog::try_from_iter(0..=10)?;
     /// snaplog.drain(..);
     /// assert_eq!(snaplog.history(), [0]);
     /// # Ok(())
@@ -289,7 +408,7 @@ impl<T> Snaplog<T> {
     /// ```should_panic
     /// # use snaplog::Snaplog;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// # let mut snaplog = Snaplog::from_history((0..=10).collect())?;
+    /// # let mut snaplog = Snaplog::try_from_iter(0..=10)?;
     /// snaplog.drain(0..);
     /// # Ok(())
     /// # }
@@ -316,8 +435,8 @@ impl<T> Snaplog<T> {
     /// # use snaplog::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record(|_| "b");
-    /// snaplog.record(|_| "c");
+    /// snaplog.record_change(|_| "b");
+    /// snaplog.record_change(|_| "c");
     /// snaplog.clear_history();
     /// assert_eq!(snaplog.initial(), &"c");
     /// assert_eq!(snaplog.has_changes(), false);
@@ -333,8 +452,8 @@ impl<T> Snaplog<T> {
     /// # use snaplog::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record(|_| "b");
-    /// snaplog.record(|_| "c");
+    /// snaplog.record_change(|_| "b");
+    /// snaplog.record_change(|_| "c");
     /// snaplog.reset();
     /// assert_eq!(snaplog.initial(), &"a");
     /// assert_eq!(snaplog.has_changes(), false);
@@ -351,8 +470,8 @@ impl<T> Snaplog<T> {
     /// # use snaplog::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record(|_| "b");
-    /// snaplog.record(|_| "c");
+    /// snaplog.record_change(|_| "b");
+    /// snaplog.record_change(|_| "c");
     /// assert_eq!(snaplog.into_vec(), ["a", "b", "c"]);
     /// ```
     pub fn into_vec(self) -> Vec<T> {
@@ -362,7 +481,7 @@ impl<T> Snaplog<T> {
 
 // unsafe interface
 impl<T> Snaplog<T> {
-    /// Creates a new [`Snaplog`] for the given `history`.
+    /// Creates a new [`Snaplog`] for the given `history` backing vector.
     ///
     /// # Safety
     /// The caller must ensure that the [`Vec`] contains at least one element.
@@ -370,12 +489,38 @@ impl<T> Snaplog<T> {
     /// # Examples
     /// ```
     /// # use snaplog::Snaplog;
-    /// assert!(Snaplog::from_history(vec![0]).is_ok());
-    /// assert!(Snaplog::<()>::from_history(vec![]).is_err());
+    /// // this is fine
+    /// let snaplog = unsafe { Snaplog::from_vec_unchecked(vec![0]) };
+    ///
+    /// // this will later fail
+    /// let snaplog: Snaplog<i32> = unsafe { Snaplog::from_vec_unchecked(vec![]) };
     /// ```
     #[inline]
-    pub unsafe fn from_history_unchecked(history: Vec<T>) -> Self {
+    pub unsafe fn from_vec_unchecked(history: Vec<T>) -> Self {
         Self { history }
+    }
+
+    /// Creates a new [`Snaplog`] for the given `history` backing vector.
+    ///
+    /// # Safety
+    /// The caller must ensure that the `iter` contains at least one element.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::Snaplog;
+    /// // this is fine
+    /// let snaplog = unsafe { Snaplog::from_iter_unchecked(0..=10) };
+    ///
+    /// // this will later fail
+    /// let snaplog: Snaplog<i32> = unsafe { Snaplog::from_iter_unchecked(std::iter::empty()) };
+    /// ```
+    #[inline]
+    pub unsafe fn from_iter_unchecked<I>(history: I) -> Self
+    where
+        I: Iterator<Item = T>,
+    {
+        // SAFETY: invariants must be upheld by the caller
+        unsafe { Self::from_vec_unchecked(history.collect()) }
     }
 
     /// Returns a mutable reference to the underlying [`Vec`]. The first element of this vector is
@@ -389,13 +534,16 @@ impl<T> Snaplog<T> {
     /// ```
     /// # use snaplog::Snaplog;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let mut snaplog = Snaplog::from_history((0..=10).collect())?;
+    /// let mut snaplog = Snaplog::try_from_iter(0..=10)?;
     ///
     /// // SAFETY: no elements are removed
     /// let inner = unsafe { snaplog.history_mut_unchecked() };
     /// inner[5] = 100;
     /// inner[6] = 200;
-    /// assert_eq!(snaplog.history(), [0, 1, 2, 3, 4, 100, 200, 7, 8, 9, 10]);
+    /// inner.drain(1..=3);
+    /// inner.push(300);
+    ///
+    /// assert_eq!(snaplog.history(), [0, 4, 100, 200, 7, 8, 9, 10, 300]);
     /// # Ok(())
     /// # }
     /// ```
@@ -465,6 +613,6 @@ impl<T> TryFrom<Vec<T>> for Snaplog<T> {
 
     #[inline]
     fn try_from(value: Vec<T>) -> Result<Self, Self::Error> {
-        Self::from_history(value)
+        Self::try_from_vec(value)
     }
 }

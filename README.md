@@ -13,8 +13,8 @@ let mut snaplog: Snaplog<_> = vec![
 
 assert_eq!(snaplog.has_changes(), true);
 
-snaplog.record(|prev| format!("{prev}-copy"));
-snaplog.record(|_| "/path/file".to_string());
+snaplog.record_change(|prev| format!("{prev}-copy"));
+snaplog.record_change(|_| "/path/file".to_string());
 
 assert_eq!(snaplog[Select::Initial], "/path/to/file");
 assert_eq!(snaplog[Select::At(3)],   "/path/file-backup-copy");

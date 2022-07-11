@@ -2,6 +2,19 @@
 
 ---
 ## [Unreleased]
+### Added
+- `Snaplog::record` (previously took change, now takes snapshot)
+- `Snaplog::record_all` (previously took changes, now takes snapshots)
+- `Snaplog::from_vec` fallible `try_*`, unchecked `*_unchecked` and panicing version
+- `Snaplog::from_iter` fallible `try_*`, unchecked `*_unchecked` and panicing version
+
+### Changes
+- more consistent documentation
+- more consistent naming (previous name to new name):
+  - `Snaplog::from_history` => `Snaplog::from_vec`
+  - `Snaplog::record` => `Snaplog::record_change`
+  - `Snaplog::record_all` => `Snaplog::record_changes_all`
+
 ### Fixed
 - fixed typo in README and docs
 
