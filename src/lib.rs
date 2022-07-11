@@ -43,7 +43,7 @@
 /// ```
 /// # use snaplog::{Select, Snaplog};
 /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-/// let mut snaplog = Snaplog::try_from_iter((0..=10).map(|n| n * 2))?;
+/// let mut snaplog = Snaplog::try_from_history((0..=10).map(|n| n * 2))?;
 ///
 /// assert_eq!(snaplog[Select::Initial], 0);
 /// assert_eq!(snaplog[Select::At(0)],   0);
@@ -161,8 +161,9 @@ impl<T> Snaplog<T> {
 
     /// Creates a new [`Snaplog`] for the given `history` backing vector.
     ///
-    /// # Errors
-    /// Returns an error if `history` was empty.
+    /// # Panics
+    /// Panics if `history` was empty.
+    ///
     ///
     /// # Examples
     /// ```
@@ -193,11 +194,11 @@ impl<T> Snaplog<T> {
     /// # Examples
     /// ```
     /// # use snaplog::Snaplog;
-    /// assert!(Snaplog::try_from_iter(0..=10).is_ok());
-    /// assert!(Snaplog::<i32>::try_from_iter(std::iter::empty()).is_err());
+    /// assert!(Snaplog::try_from_history(0..=10).is_ok());
+    /// assert!(Snaplog::<i32>::try_from_history(std::iter::empty()).is_err());
     /// ```
     #[inline]
-    pub fn try_from_iter<I>(history: I) -> Result<Self, EmptyHistoryError>
+    pub fn try_from_history<I>(history: I) -> Result<Self, EmptyHistoryError>
     where
         I: Iterator<Item = T>,
     {
@@ -214,16 +215,16 @@ impl<T> Snaplog<T> {
     /// # Examples
     /// ```
     /// # use snaplog::Snaplog;
-    /// let snaplog = Snaplog::from_iter(0..=10);
+    /// let snaplog = Snaplog::from_history(0..=10);
     /// ```
     ///
     /// This panics:
     /// ```should_panic
     /// # use snaplog::Snaplog;
-    /// let snaplog: Snaplog<i32> = Snaplog::from_iter(std::iter::empty());
+    /// let snaplog: Snaplog<i32> = Snaplog::from_history(std::iter::empty());
     /// ```
     #[inline]
-    pub fn from_iter<I>(history: I) -> Self
+    pub fn from_history<I>(history: I) -> Self
     where
         I: Iterator<Item = T>,
     {
@@ -389,7 +390,7 @@ impl<T> Snaplog<T> {
     /// ```
     /// # use snaplog::Snaplog;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let mut snaplog = Snaplog::try_from_iter(0..=10)?;
+    /// let mut snaplog = Snaplog::try_from_history(0..=10)?;
     /// let history = snaplog.history_mut();
     ///
     /// history[0] = 10;
@@ -413,7 +414,7 @@ impl<T> Snaplog<T> {
     /// ```
     /// # use snaplog::Snaplog;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let mut snaplog = Snaplog::try_from_iter(0..=10)?;
+    /// let mut snaplog = Snaplog::try_from_history(0..=10)?;
     ///
     /// snaplog.drain(2..=8);
     /// assert_eq!(snaplog.history(), [0, 1, 9, 10]);
@@ -424,7 +425,7 @@ impl<T> Snaplog<T> {
     /// ```
     /// # use snaplog::Snaplog;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// # let mut snaplog = Snaplog::try_from_iter(0..=10)?;
+    /// # let mut snaplog = Snaplog::try_from_history(0..=10)?;
     /// snaplog.drain(..);
     /// assert_eq!(snaplog.history(), [0]);
     /// # Ok(())
@@ -434,7 +435,7 @@ impl<T> Snaplog<T> {
     /// ```should_panic
     /// # use snaplog::Snaplog;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// # let mut snaplog = Snaplog::try_from_iter(0..=10)?;
+    /// # let mut snaplog = Snaplog::try_from_history(0..=10)?;
     /// snaplog.drain(0..);
     /// # Ok(())
     /// # }
@@ -495,7 +496,7 @@ impl<T> Snaplog<T> {
     /// ```
     /// # use snaplog::Snaplog;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let mut snaplog = Snaplog::try_from_iter(0..=10)?;
+    /// let mut snaplog = Snaplog::try_from_history(0..=10)?;
     ///
     /// let mut copy = vec![];
     /// for &snapshot in snaplog.iter() {
@@ -517,7 +518,7 @@ impl<T> Snaplog<T> {
     /// ```
     /// # use snaplog::Snaplog;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let mut snaplog = Snaplog::try_from_iter(0..=10)?;
+    /// let mut snaplog = Snaplog::try_from_history(0..=10)?;
     ///
     /// for snapshot in snaplog.iter_mut().filter(|&&mut n| n % 2 == 0) {
     ///     *snapshot = 2;
@@ -648,7 +649,7 @@ impl<T> Snaplog<T> {
     /// ```
     /// # use snaplog::Snaplog;
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-    /// let mut snaplog = Snaplog::try_from_iter(0..=10)?;
+    /// let mut snaplog = Snaplog::try_from_history(0..=10)?;
     ///
     /// // SAFETY: no elements are removed
     /// let inner = unsafe { snaplog.history_mut_unchecked() };
@@ -729,7 +730,7 @@ impl<T> std::iter::Extend<T> for Snaplog<T> {
 // TODO: try_from_itertor, this is likely blocked by `try_trait_v2`
 // impl<T> std::iter::FromIterator<T> for Snaplog<T> {
 //     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
-//         // Self::try_from_iter(iter)
+//         // Self::try_from_history(iter)
 //         unimplemented!("is not infallible")
 //     }
 // }
