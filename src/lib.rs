@@ -665,7 +665,7 @@ impl<T> Snaplog<T> {
 }
 
 // first class traits
-impl<T: PartialEq> std::cmp::PartialEq for Snaplog<T> {
+impl<T: PartialEq> PartialEq for Snaplog<T> {
     fn eq(&self, other: &Self) -> bool {
         // it is assumed that inequality is more common than equality
         //
@@ -698,7 +698,7 @@ impl<T: PartialEq> std::cmp::PartialEq for Snaplog<T> {
     }
 }
 
-impl<T: Eq> std::cmp::Eq for Snaplog<T> {}
+impl<T: Eq> Eq for Snaplog<T> {}
 
 impl<T> std::ops::Index<Select> for Snaplog<T> {
     type Output = T;
