@@ -21,6 +21,7 @@
   - `Snaplog::from_history` => `Snaplog::from_vec`
   - `Snaplog::record` => `Snaplog::record_change`
   - `Snaplog::record_all` => `Snaplog::record_changes_all`
+- made `Clone::clone_from` use `Vec` optimized path
 
 ### Fixed
 - fixed typo in README and docs

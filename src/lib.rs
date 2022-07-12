@@ -111,7 +111,7 @@ impl std::error::Error for EmptyHistoryError {}
 /// A struct for recording the history of changes done to a given `T` by storing a snapshot after
 /// each change. See [module level documentation][crate] for examples. The history of snapshots is
 /// stored in [`Vec`] in ascending order, that means the first element is the initial element.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 #[repr(transparent)]
 pub struct Snaplog<T> {
     history: Vec<T>,
@@ -699,6 +699,18 @@ impl<T: PartialEq> PartialEq for Snaplog<T> {
 }
 
 impl<T: Eq> Eq for Snaplog<T> {}
+
+impl<T: Clone> Clone for Snaplog<T> {
+    fn clone(&self) -> Self {
+        Self {
+            history: self.history.clone(),
+        }
+    }
+
+    fn clone_from(&mut self, source: &Self) {
+        self.history.clone_from(&source.history)
+    }
+}
 
 impl<T> std::ops::Index<Select> for Snaplog<T> {
     type Output = T;
