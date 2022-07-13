@@ -28,8 +28,8 @@
 //! # }
 //! ```
 
-#![warn(clippy::missing_panics_doc, clippy::missing_errors_doc)]
-#![deny(missing_docs, missing_debug_implementations, unsafe_op_in_unsafe_fn)]
+#![warn(missing_docs, clippy::missing_panics_doc, clippy::missing_errors_doc)]
+#![deny(missing_debug_implementations, unsafe_op_in_unsafe_fn)]
 
 // re-exports
 pub mod full;
