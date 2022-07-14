@@ -5,6 +5,12 @@
 ### Added
 - `scoped::Snaplog`
 
+### Changes
+- more consistent documentation
+- relaxed bounds on `[try_]from_history[_unchecked]` form `Iterator` to `IntoIterator`
+- more consistent naming (previous name to new name):
+  - `Snaplog::from_iter_unchecked` => `Snaplog::from_history_unchecked`
+  - `Snaplog::history_mut_unchecked` => `Snaplog::history_mut_vec`
 
 ---
 ## [0.2.1]
