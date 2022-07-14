@@ -14,7 +14,7 @@
 //! assert_eq!(snaplog.has_changes(), true);
 //!
 //! snaplog.record_change(|prev| format!("{prev}-copy"));
-//! snaplog.record_change(|_| "/path/file".to_string());
+//! snaplog.record("/path/file".to_string());
 //!
 //! assert_eq!(snaplog[Select::Initial], "/path/to/file");
 //! assert_eq!(snaplog[Select::At(3)],   "/path/file-backup-copy");

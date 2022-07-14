@@ -2,6 +2,8 @@
 
 ---
 ## [Unreleased]
+### Fixed
+- inconsistent doc examples
 
 
 ---
