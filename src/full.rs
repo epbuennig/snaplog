@@ -689,7 +689,7 @@ impl<T> std::iter::Extend<T> for Snaplog<T> {
 //     }
 // }
 
-/// A type alias for [`std::slice::Iter`].
+/// A type alias for [`std::vec::IntoIter`].
 ///
 /// # Examples
 /// ```
@@ -706,7 +706,7 @@ impl<T> std::iter::Extend<T> for Snaplog<T> {
 ///     let s: () = snapshot;
 /// }
 /// ```
-type IntoIter<T> = std::vec::IntoIter<T>;
+pub type IntoIter<T> = std::vec::IntoIter<T>;
 
 impl<T> IntoIterator for Snaplog<T> {
     type Item = T;
@@ -732,7 +732,7 @@ impl<T> IntoIterator for Snaplog<T> {
 ///     let s: &() = snapshot;
 /// }
 /// ```
-type Iter<'cl, T> = std::slice::Iter<'cl, T>;
+pub type Iter<'cl, T> = std::slice::Iter<'cl, T>;
 
 impl<'cl, T> IntoIterator for &'cl Snaplog<T> {
     type Item = &'cl T;
@@ -758,7 +758,7 @@ impl<'cl, T> IntoIterator for &'cl Snaplog<T> {
 ///     let s: &mut () = snapshot;
 /// }
 /// ```
-type IterMut<'cl, T> = std::slice::IterMut<'cl, T>;
+pub type IterMut<'cl, T> = std::slice::IterMut<'cl, T>;
 
 impl<'cl, T> IntoIterator for &'cl mut Snaplog<T> {
     type Item = &'cl mut T;

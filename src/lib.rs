@@ -32,7 +32,7 @@
 #![deny(missing_docs, missing_debug_implementations, unsafe_op_in_unsafe_fn)]
 
 // re-exports
-mod full;
+pub mod full;
 pub use full::Snaplog;
 
 const INVARIANT_UNWRAP: &str = "must have at least one element";

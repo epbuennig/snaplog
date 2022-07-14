@@ -5,6 +5,12 @@
 
 
 ---
+## [0.2.1]
+### Fixed
+- made iter types and module public
+
+
+---
 ## [0.2.0] - 2022-07-11
 ### Added
 - `Snaplog::record` (previously took change, now takes snapshot)
@@ -32,6 +38,7 @@
 Initial Release
 
 
-[Unreleased]: https://github.com/epbuennig/snaplog/compare/v0.2.0...master
+[Unreleased]: https://github.com/epbuennig/snaplog/compare/v0.2.1...master
+[0.2.1]: https://github.com/epbuennig/snaplog/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/epbuennig/snaplog/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/epbuennig/snaplog/compare/master...v0.1.0
