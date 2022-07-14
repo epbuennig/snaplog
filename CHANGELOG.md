@@ -2,6 +2,8 @@
 
 ---
 ## [Unreleased]
+### Added
+- `scoped::Snaplog`
 
 
 ---

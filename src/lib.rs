@@ -35,6 +35,9 @@
 pub mod full;
 pub use full::Snaplog;
 
+pub mod scoped;
+pub use scoped::Snaplog as ScopedSnaplog;
+
 const INVARIANT_UNWRAP: &str = "must have at least one element";
 
 /// Select a snapshot in a snaplog.
