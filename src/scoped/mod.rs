@@ -1101,6 +1101,13 @@ impl<T: IntoScoped> From<T> for Snaplog<T> {
     }
 }
 
+impl<T: IntoScoped> From<Snaplog<T>> for (full::Snaplog<T::Scope>, T::Ignored) {
+    #[inline]
+    fn from(snaplog: Snaplog<T>) -> Self {
+        snaplog.into_inner()
+    }
+}
+
 impl<T: IntoScoped> TryFrom<(Vec<T::Scope>, T::Ignored)> for Snaplog<T> {
     type Error = EmptyHistoryError;
 

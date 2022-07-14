@@ -781,6 +781,13 @@ impl<T> From<T> for Snaplog<T> {
     }
 }
 
+impl<T> From<Snaplog<T>> for Vec<T> {
+    #[inline]
+    fn from(snaplog: Snaplog<T>) -> Self {
+        snaplog.into_inner()
+    }
+}
+
 impl<T> TryFrom<Vec<T>> for Snaplog<T> {
     type Error = EmptyHistoryError;
 
