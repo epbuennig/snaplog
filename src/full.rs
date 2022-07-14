@@ -143,9 +143,9 @@ impl<T> Snaplog<T> {
     #[inline]
     pub fn try_from_history<I>(history: I) -> Result<Self, EmptyHistoryError>
     where
-        I: Iterator<Item = T>,
+        I: IntoIterator<Item = T>,
     {
-        Self::try_from_vec(history.collect())
+        Self::try_from_vec(history.into_iter().collect())
     }
 
     /// Creates a new [`Snaplog`] from the given `history`. The elements are collected into a
@@ -169,9 +169,9 @@ impl<T> Snaplog<T> {
     #[inline]
     pub fn from_history<I>(history: I) -> Self
     where
-        I: Iterator<Item = T>,
+        I: IntoIterator<Item = T>,
     {
-        Self::from_vec(history.collect())
+        Self::from_vec(history.into_iter().collect())
     }
 }
 
@@ -570,18 +570,18 @@ impl<T> Snaplog<T> {
     /// ```
     /// # use snaplog::full::Snaplog;
     /// // this is fine
-    /// let snaplog = unsafe { Snaplog::from_iter_unchecked(0..=10) };
+    /// let snaplog = unsafe { Snaplog::from_history_unchecked(0..=10) };
     ///
     /// // this will later fail
-    /// let snaplog: Snaplog<i32> = unsafe { Snaplog::from_iter_unchecked(std::iter::empty()) };
+    /// let snaplog: Snaplog<i32> = unsafe { Snaplog::from_history_unchecked(std::iter::empty()) };
     /// ```
     #[inline]
-    pub unsafe fn from_iter_unchecked<I>(history: I) -> Self
+    pub unsafe fn from_history_unchecked<I>(history: I) -> Self
     where
-        I: Iterator<Item = T>,
+        I: IntoIterator<Item = T>,
     {
         // SAFETY: invariants must be upheld by the caller
-        unsafe { Self::from_vec_unchecked(history.collect()) }
+        unsafe { Self::from_vec_unchecked(history.into_iter().collect()) }
     }
 
     /// Returns a mutable reference to the underlying [`Vec`]. The first element of this vector is
@@ -598,7 +598,7 @@ impl<T> Snaplog<T> {
     /// let mut snaplog = Snaplog::try_from_history(0..=10)?;
     ///
     /// // SAFETY: no elements are removed
-    /// let inner = unsafe { snaplog.history_mut_unchecked() };
+    /// let inner = unsafe { snaplog.history_mut_vec() };
     /// inner[5] = 100;
     /// inner[6] = 200;
     /// inner.drain(1..=3);
@@ -609,7 +609,7 @@ impl<T> Snaplog<T> {
     /// # }
     /// ```
     #[inline]
-    pub unsafe fn history_mut_unchecked(&mut self) -> &mut Vec<T> {
+    pub unsafe fn history_mut_vec(&mut self) -> &mut Vec<T> {
         &mut self.history
     }
 }
