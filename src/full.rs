@@ -44,7 +44,7 @@ use crate::{EmptyHistoryError, Select, INVARIANT_UNWRAP};
 /// assert_eq!(snaplog.has_changes(), true);
 ///
 /// snaplog.record_change(|prev| format!("{prev}-copy"));
-/// snaplog.record_change(|_| "/path/file".to_string());
+/// snaplog.record("/path/file".to_string());
 ///
 /// assert_eq!(snaplog[Select::Initial], "/path/to/file");
 /// assert_eq!(snaplog[Select::At(3)],   "/path/file-backup-copy");
@@ -63,6 +63,7 @@ pub struct Snaplog<T> {
     history: Vec<T>,
 }
 
+/// Various constructor functions.
 impl<T> Snaplog<T> {
     /// Creates a new [`Snaplog`] from the given `initial` snapshot with no recorded changes.
     ///
@@ -172,7 +173,10 @@ impl<T> Snaplog<T> {
     {
         Self::from_vec(history.collect())
     }
+}
 
+/// First class [`Snaplog`] members.
+impl<T> Snaplog<T> {
     /// Records a snapshot in this [`Snaplog`].
     ///
     /// # Examples
@@ -268,8 +272,8 @@ impl<T> Snaplog<T> {
     /// let mut snaplog = Snaplog::new("a");
     ///
     /// assert_eq!(snaplog.has_changes(), false);
-    /// snaplog.record_change(|_| "b");
-    /// snaplog.record_change(|_| "c");
+    /// snaplog.record("b");
+    /// snaplog.record("c");
     /// assert_eq!(snaplog.has_changes(), true);
     /// ```
     #[inline]
@@ -284,8 +288,8 @@ impl<T> Snaplog<T> {
     /// # use snaplog::full::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record_change(|_| "b");
-    /// snaplog.record_change(|_| "c");
+    /// snaplog.record("b");
+    /// snaplog.record("c");
     /// assert_eq!(snaplog.initial(), &"a");
     /// ```
     #[inline]
@@ -301,8 +305,8 @@ impl<T> Snaplog<T> {
     /// # use snaplog::full::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record_change(|_| "b");
-    /// snaplog.record_change(|_| "c");
+    /// snaplog.record("b");
+    /// snaplog.record("c");
     /// assert_eq!(snaplog.current(), &"c");
     /// ```
     #[inline]
@@ -317,8 +321,8 @@ impl<T> Snaplog<T> {
     /// # use snaplog::full::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record_change(|_| "b");
-    /// snaplog.record_change(|_| "c");
+    /// snaplog.record("b");
+    /// snaplog.record("c");
     /// assert_eq!(snaplog.history(), ["a", "b", "c"]);
     /// ```
     #[inline]
@@ -404,8 +408,8 @@ impl<T> Snaplog<T> {
     /// # use snaplog::full::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record_change(|_| "b");
-    /// snaplog.record_change(|_| "c");
+    /// snaplog.record("b");
+    /// snaplog.record("c");
     /// snaplog.clear_history();
     /// assert_eq!(snaplog.initial(), &"c");
     /// assert_eq!(snaplog.has_changes(), false);
@@ -421,8 +425,8 @@ impl<T> Snaplog<T> {
     /// # use snaplog::full::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record_change(|_| "b");
-    /// snaplog.record_change(|_| "c");
+    /// snaplog.record("b");
+    /// snaplog.record("c");
     /// snaplog.reset();
     /// assert_eq!(snaplog.initial(), &"a");
     /// assert_eq!(snaplog.has_changes(), false);
@@ -482,8 +486,8 @@ impl<T> Snaplog<T> {
     /// # use snaplog::full::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record_change(|_| "b");
-    /// snaplog.record_change(|_| "c");
+    /// snaplog.record("b");
+    /// snaplog.record("c");
     /// assert_eq!(snaplog.into_initial(), "a");
     /// ```
     pub fn into_initial(mut self) -> T {
@@ -497,8 +501,8 @@ impl<T> Snaplog<T> {
     /// # use snaplog::full::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record_change(|_| "b");
-    /// snaplog.record_change(|_| "c");
+    /// snaplog.record("b");
+    /// snaplog.record("c");
     /// assert_eq!(snaplog.into_current(), "c");
     /// ```
     pub fn into_current(mut self) -> T {
@@ -512,8 +516,8 @@ impl<T> Snaplog<T> {
     /// # use snaplog::{full::Snaplog, Select};
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record_change(|_| "b");
-    /// snaplog.record_change(|_| "c");
+    /// snaplog.record("b");
+    /// snaplog.record("c");
     /// assert_eq!(snaplog.into_snapshot_at(Select::At(1)), "b");
     /// ```
     pub fn into_snapshot_at(mut self, select: Select) -> T {
@@ -527,16 +531,16 @@ impl<T> Snaplog<T> {
     /// # use snaplog::full::Snaplog;
     /// let mut snaplog = Snaplog::new("a");
     ///
-    /// snaplog.record_change(|_| "b");
-    /// snaplog.record_change(|_| "c");
-    /// assert_eq!(snaplog.into_vec(), ["a", "b", "c"]);
+    /// snaplog.record("b");
+    /// snaplog.record("c");
+    /// assert_eq!(snaplog.into_inner(), ["a", "b", "c"]);
     /// ```
-    pub fn into_vec(self) -> Vec<T> {
+    pub fn into_inner(self) -> Vec<T> {
         self.history
     }
 }
 
-// unsafe interface
+/// Unsafe implementations.
 impl<T> Snaplog<T> {
     /// Creates a new [`Snaplog`] for the given `history` backing vector.
     ///
