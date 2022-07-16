@@ -455,6 +455,24 @@ impl<T: IntoScoped> Snaplog<T> {
         self.full.initial()
     }
 
+    /// Returns the element at the given [`Select`].
+    ///
+    /// # Examples
+    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
+    /// implementation.
+    /// ```
+    #[doc = include_str!("docs_impl.txt")]
+    /// # use snaplog::{Select, scoped::Snaplog};
+    /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
+    ///
+    /// snaplog.record("b");
+    /// snaplog.record("c");
+    /// assert_eq!(snaplog.snapshot_at(Select::At(1)), &"b");
+    /// ```
+    pub fn snapshot_at(&self, select: Select) -> &T::Scope {
+        self.full.snapshot_at(select)
+    }
+
     /// Returns the current element, that is the last recorded change or the initial element if
     /// there are no none.
     ///
@@ -473,6 +491,87 @@ impl<T: IntoScoped> Snaplog<T> {
     #[inline]
     pub fn current(&self) -> &T::Scope {
         self.full.current()
+    }
+
+    /// Returns the initial element.
+    ///
+    /// # Examples
+    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
+    /// implementation.
+    /// ```
+    #[doc = include_str!("docs_impl.txt")]
+    /// # use snaplog::scoped::Snaplog;
+    /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
+    ///
+    /// snaplog.record("b");
+    /// snaplog.record("c");
+    /// assert_eq!(snaplog.initial_mut(), &mut "a");
+    /// ```
+    #[inline]
+    pub fn initial_mut(&mut self) -> &mut T::Scope {
+        self.full.initial_mut()
+    }
+
+    /// Returns the element at the given [`Select`].
+    ///
+    /// # Examples
+    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
+    /// implementation.
+    /// ```
+    #[doc = include_str!("docs_impl.txt")]
+    /// # use snaplog::{Select, scoped::Snaplog};
+    /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
+    ///
+    /// snaplog.record("b");
+    /// snaplog.record("c");
+    /// assert_eq!(snaplog.snapshot_at_mut(Select::At(1)), &mut "b");
+    /// ```
+    pub fn snapshot_at_mut(&mut self, select: Select) -> &mut T::Scope {
+        self.full.snapshot_at_mut(select)
+    }
+
+    /// Returns the current element, that is the last recorded change or the initial element if
+    /// there are no none.
+    ///
+    /// # Examples
+    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
+    /// implementation.
+    /// ```
+    #[doc = include_str!("docs_impl.txt")]
+    /// # use snaplog::scoped::Snaplog;
+    /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
+    ///
+    /// snaplog.record("b");
+    /// snaplog.record("c");
+    /// assert_eq!(snaplog.current_mut(), &mut "c");
+    /// ```
+    #[inline]
+    pub fn current_mut(&mut self) -> &mut T::Scope {
+        self.full.current_mut()
+    }
+
+    /// Clones the element at the given [`Select`].
+    ///
+    /// # Examples
+    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
+    /// implementation.
+    /// ```
+    #[doc = include_str!("docs_impl.txt")]
+    /// # use snaplog::{scoped::Snaplog, Select};
+    /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
+    ///
+    /// snaplog.record("b");
+    /// snaplog.record("c");
+    /// assert_eq!(snaplog.clone_snapshot_at(Select::At(1)), Prefixed::new("prefix:b"));
+    /// ```
+    #[inline]
+    pub fn clone_snapshot_at(&self, select: Select) -> T
+    where
+        T::Scope: Clone,
+        T::Ignored: Clone,
+    {
+        // TODO: let the user decide how to reconstruct from references? breaks IntoScoped interface
+        T::from_scoped(self.snapshot_at(select).clone(), self.ignored.clone())
     }
 
     /// Returns the full history recorded in this [`Snaplog`], including the initial element.
@@ -894,14 +993,14 @@ impl<T: IntoScoped> std::ops::Index<Select> for Snaplog<T> {
 
     #[inline]
     fn index(&self, index: Select) -> &Self::Output {
-        index.index_into(self.full.history())
+        self.snapshot_at(index)
     }
 }
 
 impl<T: IntoScoped> std::ops::IndexMut<Select> for Snaplog<T> {
     #[inline]
     fn index_mut(&mut self, index: Select) -> &mut Self::Output {
-        index.index_into_mut(self.full.history_mut())
+        self.snapshot_at_mut(index)
     }
 }
 

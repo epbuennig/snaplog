@@ -2,8 +2,22 @@
 
 ---
 ## [Unreleased]
+
+
+---
+## [0.3.1]
+### Added
+- `Snaplog::snapshot_at`
+- `Snaplog::initial_mut` (these are added for consistency but will be removed as well as their
+  immutable version)
+- `Snaplog::current_mut` (these are added for consistency but will be removed as well as their
+  immutable version)
+- `Snaplog::snapshot_at_mut`
+- `Snaplog::clone_snapshot_at`
+
 ### Fixed
 - inconsistent doc examples
+- fixed changelog link
 
 
 ---
@@ -53,8 +67,9 @@
 Initial Release
 
 
-[Unreleased]: https://github.com/epbuennig/snaplog/compare/v0.3.0...master
-[0.3.0]: https://github.com/epbuennig/snaplog/compare/v0.2.1...v0.2.3
+[Unreleased]: https://github.com/epbuennig/snaplog/compare/v0.3.1...master
+[0.3.1]: https://github.com/epbuennig/snaplog/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/epbuennig/snaplog/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/epbuennig/snaplog/compare/v0.2.0...v0.2.1
 [0.2.0]: https://github.com/epbuennig/snaplog/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/epbuennig/snaplog/compare/master...v0.1.0

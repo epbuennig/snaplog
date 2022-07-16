@@ -297,6 +297,22 @@ impl<T> Snaplog<T> {
         self.history.first().expect(INVARIANT_UNWRAP)
     }
 
+    /// Returns the element at the given [`Select`].
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::{full::Snaplog, Select};
+    /// let mut snaplog = Snaplog::new("a");
+    ///
+    /// snaplog.record("b");
+    /// snaplog.record("c");
+    /// assert_eq!(snaplog.snapshot_at(Select::At(1)), &"b");
+    /// ```
+    #[inline]
+    pub fn snapshot_at(&self, select: Select) -> &T {
+        select.index_into(&self.history)
+    }
+
     /// Returns the current element, that is the last recorded change or the initial element if
     /// there are no none.
     ///
@@ -312,6 +328,74 @@ impl<T> Snaplog<T> {
     #[inline]
     pub fn current(&self) -> &T {
         self.history.last().expect(INVARIANT_UNWRAP)
+    }
+
+    /// Returns the initial element.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::full::Snaplog;
+    /// let mut snaplog = Snaplog::new("a");
+    ///
+    /// snaplog.record("b");
+    /// snaplog.record("c");
+    /// assert_eq!(snaplog.initial_mut(), &mut "a");
+    /// ```
+    #[inline]
+    pub fn initial_mut(&mut self) -> &mut T {
+        self.history.first_mut().expect(INVARIANT_UNWRAP)
+    }
+
+    /// Returns the element at the given [`Select`].
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::{full::Snaplog, Select};
+    /// let mut snaplog = Snaplog::new("a");
+    ///
+    /// snaplog.record("b");
+    /// snaplog.record("c");
+    /// assert_eq!(snaplog.snapshot_at_mut(Select::At(1)), &mut "b");
+    /// ```
+    #[inline]
+    pub fn snapshot_at_mut(&mut self, select: Select) -> &mut T {
+        select.index_into_mut(&mut self.history)
+    }
+
+    /// Returns the current element, that is the last recorded change or the initial element if
+    /// there are no none.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::full::Snaplog;
+    /// let mut snaplog = Snaplog::new("a");
+    ///
+    /// snaplog.record("b");
+    /// snaplog.record("c");
+    /// assert_eq!(snaplog.current_mut(), &mut "c");
+    /// ```
+    #[inline]
+    pub fn current_mut(&mut self) -> &mut T {
+        self.history.last_mut().expect(INVARIANT_UNWRAP)
+    }
+
+    /// Clones the element at the given [`Select`].
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::{full::Snaplog, Select};
+    /// let mut snaplog = Snaplog::new("a");
+    ///
+    /// snaplog.record("b");
+    /// snaplog.record("c");
+    /// assert_eq!(snaplog.clone_snapshot_at(Select::At(1)), "b");
+    /// ```
+    #[inline]
+    pub fn clone_snapshot_at(&self, select: Select) -> T
+    where
+        T: Clone,
+    {
+        select.index_into(&self.history).clone()
     }
 
     /// Returns the full history recorded in this [`Snaplog`], including the initial element.
@@ -667,14 +751,14 @@ impl<T> std::ops::Index<Select> for Snaplog<T> {
 
     #[inline]
     fn index(&self, index: Select) -> &Self::Output {
-        index.index_into(&self.history)
+        self.snapshot_at(index)
     }
 }
 
 impl<T> std::ops::IndexMut<Select> for Snaplog<T> {
     #[inline]
     fn index_mut(&mut self, index: Select) -> &mut Self::Output {
-        index.index_into_mut(&mut self.history)
+        self.snapshot_at_mut(index)
     }
 }
 
