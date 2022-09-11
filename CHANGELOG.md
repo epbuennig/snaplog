@@ -2,7 +2,8 @@
 
 ---
 ## [Unreleased]
-
+### Added
+- `Snaplog::try_record_change` for fallible changes
 
 ---
 ## [0.3.1]

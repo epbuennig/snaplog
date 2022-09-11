@@ -229,6 +229,33 @@ impl<T> Snaplog<T> {
         self.history.push(f(self.current()));
     }
 
+    // TODO: keyword generics over try would be great here
+
+    /// Tries to record a change to the current element in this [`Snaplog`].
+    ///
+    /// # Errors
+    /// Returns the inner error if the closure failed.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::full::Snaplog;
+    /// let mut snaplog = Snaplog::new("a");
+    ///
+    /// snaplog.try_record_change(|prev| { assert_eq!(prev, &"a"); Ok("b") })?;
+    /// snaplog.try_record_change(|prev| { assert_eq!(prev, &"b"); Ok("c") })?;
+    /// assert_eq!(snaplog.try_record_change(|prev| Err(())), Err(()));
+    /// assert_eq!(snaplog.history(), ["a", "b", "c"]);
+    /// # Ok::<_, ()>(())
+    /// ```
+    #[inline]
+    pub fn try_record_change<F, E>(&mut self, mut f: F) -> Result<(), E>
+    where
+        F: FnMut(&T) -> Result<T, E>,
+    {
+        self.history.push(f(self.current())?);
+        Ok(())
+    }
+
     // NOTE: this may be superseded by an impl using a single Generator that takes the current arg
     // and yields the next, but it would have to be some kind of generator that can give a goos size
     // estimation which in turn would hurt the ergonomics

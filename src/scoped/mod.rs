@@ -393,7 +393,34 @@ impl<T: IntoScoped> Snaplog<T> {
     where
         F: FnMut(&T::Scope) -> T::Scope,
     {
-        self.full.record_change(f);
+        self.full.record_change(f)
+    }
+
+    /// Records a change to the current element in this [`Snaplog`].
+    ///
+    /// # Errors
+    /// Returns the inner error if the closure failed.
+    ///
+    /// # Examples
+    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
+    /// implementation.
+    /// ```
+    #[doc = include_str!("docs_impl.txt")]
+    /// # use snaplog::scoped::Snaplog;
+    /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
+    ///
+    /// snaplog.try_record_change(|prev| { assert_eq!(prev, &"a"); Ok("b") })?;
+    /// snaplog.try_record_change(|prev| { assert_eq!(prev, &"b"); Ok("c") })?;
+    /// assert_eq!(snaplog.try_record_change(|prev| Err(())), Err(()));
+    /// assert_eq!(snaplog.history(), ["a", "b", "c"]);
+    /// # Ok::<_, ()>(())
+    /// ```
+    #[inline]
+    pub fn try_record_change<F, E>(&mut self, f: F) -> Result<(), E>
+    where
+        F: FnMut(&T::Scope) -> Result<T::Scope, E>,
+    {
+        self.full.try_record_change(f)
     }
 
     /// Records multiple successive changes to the current element in this [`Snaplog`].
@@ -1041,7 +1068,7 @@ pub struct IntoIter<T: IntoScoped> {
     ignored: T::Ignored,
 }
 
-impl<'cl, T: IntoScoped> IntoIter<T> {
+impl<T: IntoScoped> IntoIter<T> {
     /// Returns a reference to the ignored part.
     #[inline]
     pub fn ignored(&self) -> &T::Ignored {
