@@ -4,7 +4,6 @@
 //! # Examples
 //! ```
 //! use snaplog::{Select, Snaplog};
-//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let mut snaplog: Snaplog<_> = vec![
 //!     "/path/to/file".to_string(),
 //!     "/path/to/file-backup".to_string(),
@@ -24,8 +23,7 @@
 //!
 //! assert_eq!(snaplog.history(), ["/path/file"]);
 //! assert_eq!(snaplog.has_changes(), false);
-//! # Ok(())
-//! # }
+//! # Ok::<_, Box<dyn std::error::Error>>(())
 //! ```
 
 #![warn(missing_docs, clippy::missing_panics_doc, clippy::missing_errors_doc)]
@@ -47,7 +45,6 @@ const INVARIANT_UNWRAP: &str = "must have at least one element";
 /// # Examples
 /// ```
 /// # use snaplog::{Select, Snaplog};
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let mut snaplog = Snaplog::try_from_history((0..=10).map(|n| n * 2))?;
 ///
 /// assert_eq!(snaplog[Select::Initial], 0);
@@ -56,8 +53,7 @@ const INVARIANT_UNWRAP: &str = "must have at least one element";
 /// assert_eq!(snaplog[Select::At(9)],   18);
 /// assert_eq!(snaplog[Select::At(10)],  20);
 /// assert_eq!(snaplog[Select::Current], 20);
-/// # Ok(())
-/// # }
+/// # Ok::<_, Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Debug, Clone, Copy)]
 pub enum Select {
