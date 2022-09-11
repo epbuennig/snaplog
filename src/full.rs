@@ -521,6 +521,31 @@ impl<T> Snaplog<T> {
         self.history.drain(1..);
     }
 
+    /// Reserve space for `n` additional elements.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::full::Snaplog;
+    /// let mut snaplog = Snaplog::new("a");
+    /// snaplog.reserve(10);
+    /// ```
+    pub fn reserve(&mut self, n: usize) {
+        self.history.reserve(n);
+    }
+
+    /// Reserve space for `n` additional elements.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::full::Snaplog;
+    /// let mut snaplog = Snaplog::new("a");
+    /// snaplog.try_reserve(10)?;
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn try_reserve(&mut self, n: usize) -> Result<(), TryReserveError> {
+        self.history.try_reserve(n)
+    }
+
     /// Returns an iterator over references of the whole underling history.
     ///
     /// # Examples

@@ -77,7 +77,7 @@
 //! ```
 
 use crate::{full, EmptyHistoryError, Select};
-use std::ops::RangeBounds;
+use std::{collections::TryReserveError, ops::RangeBounds};
 
 mod docs_impl;
 
@@ -626,6 +626,31 @@ impl<T: IntoScoped> Snaplog<T> {
     /// ```
     pub fn reset(&mut self) {
         self.full.reset();
+    }
+
+    /// Reserve space for `n` additional elements.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::scoped::{Snaplog, Prefixed};
+    /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
+    /// snaplog.reserve(10);
+    /// ```
+    pub fn reserve(&mut self, n: usize) {
+        self.full.reserve(n);
+    }
+
+    /// Reserve space for `n` additional elements.
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::scoped::{Snaplog, Prefixed};
+    /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
+    /// snaplog.try_reserve(10)?;
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn try_reserve(&mut self, n: usize) -> Result<(), TryReserveError> {
+        self.full.try_reserve(n)
     }
 
     /// Returns an iterator over references of the whole underling history.

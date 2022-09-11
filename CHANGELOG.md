@@ -4,6 +4,7 @@
 ## [Unreleased]
 ### Added
 - `Snaplog::try_record_change` for fallible changes
+- `Snaplog::{try_}reserve` for reserving additional space
 
 ### Changed
 - removed inline attributes
