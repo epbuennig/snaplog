@@ -5,6 +5,9 @@
 ### Added
 - `Snaplog::try_record_change` for fallible changes
 
+### Changed
+- removed inline attributes
+
 ---
 ## [0.3.1]
 ### Added

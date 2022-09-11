@@ -76,7 +76,6 @@ impl<T> Snaplog<T> {
     /// assert_eq!(snaplog.initial(), snaplog.current());
     /// assert_eq!(snaplog.has_changes(), false);
     /// ```
-    #[inline]
     pub fn new(initial: T) -> Self {
         Self {
             history: vec![initial],
@@ -94,7 +93,6 @@ impl<T> Snaplog<T> {
     /// assert!(Snaplog::try_from_vec(vec![0]).is_ok());
     /// assert!(Snaplog::<()>::try_from_vec(vec![]).is_err());
     /// ```
-    #[inline]
     pub fn try_from_vec(history: Vec<T>) -> Result<Self, EmptyHistoryError> {
         if history.is_empty() {
             Err(EmptyHistoryError(()))
@@ -120,7 +118,6 @@ impl<T> Snaplog<T> {
     /// # use snaplog::full::Snaplog;
     /// let snaplog: Snaplog<i32> = Snaplog::from_vec(vec![]);
     /// ```
-    #[inline]
     pub fn from_vec(history: Vec<T>) -> Self {
         match Self::try_from_vec(history) {
             Ok(this) => this,
@@ -141,7 +138,6 @@ impl<T> Snaplog<T> {
     /// assert!(Snaplog::try_from_history(0..=10).is_ok());
     /// assert!(Snaplog::<i32>::try_from_history(std::iter::empty()).is_err());
     /// ```
-    #[inline]
     pub fn try_from_history<I>(history: I) -> Result<Self, EmptyHistoryError>
     where
         I: IntoIterator<Item = T>,
@@ -167,7 +163,6 @@ impl<T> Snaplog<T> {
     /// # use snaplog::full::Snaplog;
     /// let snaplog: Snaplog<i32> = Snaplog::from_history(std::iter::empty());
     /// ```
-    #[inline]
     pub fn from_history<I>(history: I) -> Self
     where
         I: IntoIterator<Item = T>,
@@ -189,7 +184,6 @@ impl<T> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.history(), ["a", "b", "c"]);
     /// ```
-    #[inline]
     pub fn record(&mut self, snapshot: T) {
         self.history.push(snapshot);
     }
@@ -222,7 +216,6 @@ impl<T> Snaplog<T> {
     /// snaplog.record_change(|prev| { assert_eq!(prev, &"b"); "c" });
     /// assert_eq!(snaplog.history(), ["a", "b", "c"]);
     /// ```
-    #[inline]
     pub fn record_change<F>(&mut self, mut f: F)
     where
         F: FnMut(&T) -> T,
@@ -248,7 +241,6 @@ impl<T> Snaplog<T> {
     /// assert_eq!(snaplog.history(), ["a", "b", "c"]);
     /// # Ok::<_, ()>(())
     /// ```
-    #[inline]
     pub fn try_record_change<F, E>(&mut self, mut f: F) -> Result<(), E>
     where
         F: FnMut(&T) -> Result<T, E>,
@@ -304,7 +296,6 @@ impl<T> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.has_changes(), true);
     /// ```
-    #[inline]
     pub fn has_changes(&self) -> bool {
         self.history.len() > 1
     }
@@ -320,7 +311,6 @@ impl<T> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.initial(), &"a");
     /// ```
-    #[inline]
     pub fn initial(&self) -> &T {
         self.history.first().expect(INVARIANT_UNWRAP)
     }
@@ -336,7 +326,6 @@ impl<T> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.snapshot_at(Select::At(1)), &"b");
     /// ```
-    #[inline]
     pub fn snapshot_at(&self, select: Select) -> &T {
         select.index_into(&self.history)
     }
@@ -353,7 +342,6 @@ impl<T> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.current(), &"c");
     /// ```
-    #[inline]
     pub fn current(&self) -> &T {
         self.history.last().expect(INVARIANT_UNWRAP)
     }
@@ -369,7 +357,6 @@ impl<T> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.initial_mut(), &mut "a");
     /// ```
-    #[inline]
     pub fn initial_mut(&mut self) -> &mut T {
         self.history.first_mut().expect(INVARIANT_UNWRAP)
     }
@@ -385,7 +372,6 @@ impl<T> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.snapshot_at_mut(Select::At(1)), &mut "b");
     /// ```
-    #[inline]
     pub fn snapshot_at_mut(&mut self, select: Select) -> &mut T {
         select.index_into_mut(&mut self.history)
     }
@@ -402,7 +388,6 @@ impl<T> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.current_mut(), &mut "c");
     /// ```
-    #[inline]
     pub fn current_mut(&mut self) -> &mut T {
         self.history.last_mut().expect(INVARIANT_UNWRAP)
     }
@@ -418,7 +403,6 @@ impl<T> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.clone_snapshot_at(Select::At(1)), "b");
     /// ```
-    #[inline]
     pub fn clone_snapshot_at(&self, select: Select) -> T
     where
         T: Clone,
@@ -437,7 +421,6 @@ impl<T> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.history(), ["a", "b", "c"]);
     /// ```
-    #[inline]
     pub fn history(&self) -> &[T] {
         self.history.as_slice()
     }
@@ -454,7 +437,6 @@ impl<T> Snaplog<T> {
     /// assert_eq!(snaplog.history(), [10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
-    #[inline]
     pub fn history_mut(&mut self) -> &mut [T] {
         self.history.as_mut_slice()
     }
@@ -518,7 +500,6 @@ impl<T> Snaplog<T> {
     /// assert_eq!(snaplog.initial(), &"c");
     /// assert_eq!(snaplog.has_changes(), false);
     /// ```
-    #[inline]
     pub fn clear_history(&mut self) {
         self.history.drain(..self.history.len() - 1);
     }
@@ -536,7 +517,6 @@ impl<T> Snaplog<T> {
     /// assert_eq!(snaplog.initial(), &"a");
     /// assert_eq!(snaplog.has_changes(), false);
     /// ```
-    #[inline]
     pub fn reset(&mut self) {
         self.history.drain(1..);
     }
@@ -556,7 +536,6 @@ impl<T> Snaplog<T> {
     /// assert_eq!(copy, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
-    #[inline]
     pub fn iter(&self) -> Iter<'_, T> {
         self.history.iter()
     }
@@ -575,7 +554,6 @@ impl<T> Snaplog<T> {
     /// assert_eq!(snaplog.history(), [2, 1, 2, 3, 2, 5, 2, 7, 2, 9, 2]);
     /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
-    #[inline]
     pub fn iter_mut(&mut self) -> IterMut<'_, T> {
         self.history.iter_mut()
     }
@@ -657,7 +635,6 @@ impl<T> Snaplog<T> {
     /// // this will later fail
     /// let snaplog: Snaplog<i32> = unsafe { Snaplog::from_vec_unchecked(vec![]) };
     /// ```
-    #[inline]
     pub unsafe fn from_vec_unchecked(history: Vec<T>) -> Self {
         Self { history }
     }
@@ -676,7 +653,6 @@ impl<T> Snaplog<T> {
     /// // this will later fail
     /// let snaplog: Snaplog<i32> = unsafe { Snaplog::from_history_unchecked(std::iter::empty()) };
     /// ```
-    #[inline]
     pub unsafe fn from_history_unchecked<I>(history: I) -> Self
     where
         I: IntoIterator<Item = T>,
@@ -707,7 +683,6 @@ impl<T> Snaplog<T> {
     /// assert_eq!(snaplog.history(), [0, 4, 100, 200, 7, 8, 9, 10, 300]);
     /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
-    #[inline]
     pub unsafe fn history_mut_vec(&mut self) -> &mut Vec<T> {
         &mut self.history
     }
@@ -764,14 +739,12 @@ impl<T: Clone> Clone for Snaplog<T> {
 impl<T> std::ops::Index<Select> for Snaplog<T> {
     type Output = T;
 
-    #[inline]
     fn index(&self, index: Select) -> &Self::Output {
         self.snapshot_at(index)
     }
 }
 
 impl<T> std::ops::IndexMut<Select> for Snaplog<T> {
-    #[inline]
     fn index_mut(&mut self, index: Select) -> &mut Self::Output {
         self.snapshot_at_mut(index)
     }
@@ -874,14 +847,12 @@ impl<'cl, T> IntoIterator for &'cl mut Snaplog<T> {
 
 // conversions
 impl<T> From<T> for Snaplog<T> {
-    #[inline]
     fn from(initial: T) -> Self {
         Self::new(initial)
     }
 }
 
 impl<T> From<Snaplog<T>> for Vec<T> {
-    #[inline]
     fn from(snaplog: Snaplog<T>) -> Self {
         snaplog.into_inner()
     }
@@ -890,7 +861,6 @@ impl<T> From<Snaplog<T>> for Vec<T> {
 impl<T> TryFrom<Vec<T>> for Snaplog<T> {
     type Error = EmptyHistoryError;
 
-    #[inline]
     fn try_from(value: Vec<T>) -> Result<Self, Self::Error> {
         Self::try_from_vec(value)
     }

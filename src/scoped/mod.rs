@@ -143,7 +143,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// assert_eq!(snaplog.ignored(), &Some("prefix"));
     /// assert_eq!(snaplog.has_changes(), false);
     /// ```
-    #[inline]
     pub fn new(initial: T) -> Self {
         let (scope, ignored) = initial.into_scoped();
 
@@ -164,7 +163,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// assert!(Snaplog::<Prefixed>::try_from_vec(vec!["content"], None).is_ok());
     /// assert!(Snaplog::<Prefixed>::try_from_vec(vec![], Some("prefix")).is_err());
     /// ```
-    #[inline]
     pub fn try_from_vec(
         history: Vec<T::Scope>,
         ignored: T::Ignored,
@@ -191,7 +189,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let snaplog: Snaplog<Prefixed> = Snaplog::from_vec(vec![], Some("Prefix"));
     /// ```
-    #[inline]
     pub fn from_vec(history: Vec<T::Scope>, ignored: T::Ignored) -> Self {
         match Self::try_from_vec(history, ignored) {
             Ok(this) => this,
@@ -212,7 +209,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// assert!(Snaplog::<Prefixed>::try_from_history(["a", "b", "c"], None).is_ok());
     /// assert!(Snaplog::<Prefixed>::try_from_history(std::iter::empty(), Some("a")).is_err());
     /// ```
-    #[inline]
     pub fn try_from_history<I>(history: I, ignored: T::Ignored) -> Result<Self, EmptyHistoryError>
     where
         I: IntoIterator<Item = T::Scope>,
@@ -238,7 +234,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let snaplog: Snaplog<Prefixed> = Snaplog::from_history(std::iter::empty(), Some("prefix"));
     /// ```
-    #[inline]
     pub fn from_history<I>(history: I, ignored: T::Ignored) -> Self
     where
         I: IntoIterator<Item = T::Scope>,
@@ -315,7 +310,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.history(), ["a", "b", "c"]);
     /// ```
-    #[inline]
     pub fn record(&mut self, snapshot: T::Scope) {
         self.full.record(snapshot);
     }
@@ -348,7 +342,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// snaplog.record_change(|prev| { assert_eq!(prev, &"b"); "c" });
     /// assert_eq!(snaplog.history(), ["a", "b", "c"]);
     /// ```
-    #[inline]
     pub fn record_change<F>(&mut self, f: F)
     where
         F: FnMut(&T::Scope) -> T::Scope,
@@ -372,7 +365,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// assert_eq!(snaplog.history(), ["a", "b", "c"]);
     /// # Ok::<_, ()>(())
     /// ```
-    #[inline]
     pub fn try_record_change<F, E>(&mut self, f: F) -> Result<(), E>
     where
         F: FnMut(&T::Scope) -> Result<T::Scope, E>,
@@ -409,7 +401,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.has_changes(), true);
     /// ```
-    #[inline]
     pub fn has_changes(&self) -> bool {
         self.full.has_changes()
     }
@@ -425,7 +416,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.initial(), &"a");
     /// ```
-    #[inline]
     pub fn initial(&self) -> &T::Scope {
         self.full.initial()
     }
@@ -457,7 +447,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.current(), &"c");
     /// ```
-    #[inline]
     pub fn current(&self) -> &T::Scope {
         self.full.current()
     }
@@ -473,7 +462,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.initial_mut(), &mut "a");
     /// ```
-    #[inline]
     pub fn initial_mut(&mut self) -> &mut T::Scope {
         self.full.initial_mut()
     }
@@ -505,7 +493,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.current_mut(), &mut "c");
     /// ```
-    #[inline]
     pub fn current_mut(&mut self) -> &mut T::Scope {
         self.full.current_mut()
     }
@@ -521,7 +508,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.clone_snapshot_at(Select::At(1)), Prefixed::new("prefix:b"));
     /// ```
-    #[inline]
     pub fn clone_snapshot_at(&self, select: Select) -> T
     where
         T::Scope: Clone,
@@ -542,7 +528,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// snaplog.record("c");
     /// assert_eq!(snaplog.history(), ["a", "b", "c"]);
     /// ```
-    #[inline]
     pub fn history(&self) -> &[T::Scope] {
         self.full.history()
     }
@@ -562,7 +547,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// assert_eq!(snaplog.history(), ["g", "b", "c", "d", "e"]);
     /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
-    #[inline]
     pub fn history_mut(&mut self) -> &mut [T::Scope] {
         self.full.history_mut()
     }
@@ -640,7 +624,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// assert_eq!(snaplog.initial(), &"a");
     /// assert_eq!(snaplog.has_changes(), false);
     /// ```
-    #[inline]
     pub fn reset(&mut self) {
         self.full.reset();
     }
@@ -663,7 +646,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// assert_eq!(copy, ["a", "b", "c", "d", "e"]);
     /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
-    #[inline]
     pub fn iter(&self) -> Iter<'_, T> {
         self.into_iter()
     }
@@ -685,7 +667,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// assert_eq!(snaplog.history(), ["f", "b", "c", "f", "e"]);
     /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
-    #[inline]
     pub fn iter_mut(&mut self) -> IterMut<'_, T> {
         self.into_iter()
     }
@@ -774,7 +755,6 @@ impl<T: IntoScoped> Snaplog<T> {
     ///     Snaplog::from_vec_unchecked(vec![], Some("prefix"))
     /// };
     /// ```
-    #[inline]
     pub unsafe fn from_vec_unchecked(history: Vec<T::Scope>, ignored: T::Ignored) -> Self {
         Self {
             // SAFETY: invariants must be upheld by the caller
@@ -801,7 +781,6 @@ impl<T: IntoScoped> Snaplog<T> {
     ///     Snaplog::from_history_unchecked(std::iter::empty(), Some("prefix"))
     /// };
     /// ```
-    #[inline]
     pub unsafe fn from_history_unchecked<I>(history: I, ignored: T::Ignored) -> Self
     where
         I: IntoIterator<Item = T::Scope>,
@@ -835,7 +814,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// assert_eq!(snaplog.history(), ["a", "e", "h", "i", "j"]);
     /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
-    #[inline]
     pub unsafe fn history_mut_vec(&mut self) -> &mut Vec<T::Scope> {
         // SAFETY: invariants must be upheld by the caller
         unsafe { self.full.history_mut_vec() }
@@ -863,7 +841,6 @@ impl<T: IntoScoped> Snaplog<T> {
     /// assert_eq!(snaplog.into_current(), Prefixed::new("new_prefix:e"));
     /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
-    #[inline]
     pub unsafe fn ignored_mut(&mut self) -> &mut T::Ignored {
         &mut self.ignored
     }
@@ -891,14 +868,12 @@ where
 impl<T: IntoScoped> std::ops::Index<Select> for Snaplog<T> {
     type Output = T::Scope;
 
-    #[inline]
     fn index(&self, index: Select) -> &Self::Output {
         self.snapshot_at(index)
     }
 }
 
 impl<T: IntoScoped> std::ops::IndexMut<Select> for Snaplog<T> {
-    #[inline]
     fn index_mut(&mut self, index: Select) -> &mut Self::Output {
         self.snapshot_at_mut(index)
     }
@@ -940,7 +915,6 @@ pub struct IntoIter<T: IntoScoped> {
 
 impl<T: IntoScoped> IntoIter<T> {
     /// Returns a reference to the ignored part.
-    #[inline]
     pub fn ignored(&self) -> &T::Ignored {
         &self.ignored
     }
@@ -952,7 +926,6 @@ where
 {
     type Item = (T::Scope, T::Ignored);
 
-    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         // TODO: reduce last unnecessary clone by using a peeking iter and storing it as an Option
         self.inner.next().map(|s| (s, self.ignored.clone()))
@@ -966,7 +939,6 @@ where
     type Item = (T::Scope, T::Ignored);
     type IntoIter = IntoIter<T>;
 
-    #[inline]
     fn into_iter(self) -> Self::IntoIter {
         Self::IntoIter {
             inner: self.full.into_iter(),
@@ -1002,7 +974,6 @@ pub struct Iter<'cl, T: IntoScoped> {
 
 impl<'cl, T: IntoScoped> Iter<'cl, T> {
     /// Returns a reference to the ignored part.
-    #[inline]
     pub fn ignored(&self) -> &'cl T::Ignored {
         self.ignored
     }
@@ -1011,7 +982,6 @@ impl<'cl, T: IntoScoped> Iter<'cl, T> {
 impl<'cl, T: IntoScoped> Iterator for Iter<'cl, T> {
     type Item = (&'cl T::Scope, &'cl T::Ignored);
 
-    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         self.inner.next().map(|s| (s, self.ignored))
     }
@@ -1021,7 +991,6 @@ impl<'cl, T: IntoScoped> IntoIterator for &'cl Snaplog<T> {
     type Item = (&'cl T::Scope, &'cl T::Ignored);
     type IntoIter = Iter<'cl, T>;
 
-    #[inline]
     fn into_iter(self) -> Self::IntoIter {
         Iter {
             inner: self.full.iter(),
@@ -1055,7 +1024,6 @@ pub struct IterMut<'cl, T: IntoScoped> {
 
 impl<'cl, T: IntoScoped> IterMut<'cl, T> {
     /// Returns a reference to the ignored part.
-    #[inline]
     pub fn ignored(&self) -> &'cl T::Ignored {
         self.ignored
     }
@@ -1064,7 +1032,6 @@ impl<'cl, T: IntoScoped> IterMut<'cl, T> {
 impl<'cl, T: IntoScoped> Iterator for IterMut<'cl, T> {
     type Item = (&'cl mut T::Scope, &'cl T::Ignored);
 
-    #[inline]
     fn next(&mut self) -> Option<Self::Item> {
         self.inner.next().map(|s| (s, self.ignored))
     }
@@ -1074,7 +1041,6 @@ impl<'cl, T: IntoScoped> IntoIterator for &'cl mut Snaplog<T> {
     type Item = (&'cl mut T::Scope, &'cl T::Ignored);
     type IntoIter = IterMut<'cl, T>;
 
-    #[inline]
     fn into_iter(self) -> Self::IntoIter {
         IterMut {
             inner: self.full.iter_mut(),
@@ -1085,14 +1051,12 @@ impl<'cl, T: IntoScoped> IntoIterator for &'cl mut Snaplog<T> {
 
 // conversions
 impl<T: IntoScoped> From<T> for Snaplog<T> {
-    #[inline]
     fn from(initial: T) -> Self {
         Self::new(initial)
     }
 }
 
 impl<T: IntoScoped> From<Snaplog<T>> for (full::Snaplog<T::Scope>, T::Ignored) {
-    #[inline]
     fn from(snaplog: Snaplog<T>) -> Self {
         snaplog.into_inner()
     }
@@ -1101,7 +1065,6 @@ impl<T: IntoScoped> From<Snaplog<T>> for (full::Snaplog<T::Scope>, T::Ignored) {
 impl<T: IntoScoped> TryFrom<(Vec<T::Scope>, T::Ignored)> for Snaplog<T> {
     type Error = EmptyHistoryError;
 
-    #[inline]
     fn try_from(value: (Vec<T::Scope>, T::Ignored)) -> Result<Self, Self::Error> {
         Self::try_from_vec(value.0, value.1)
     }
