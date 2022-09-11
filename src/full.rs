@@ -535,6 +535,9 @@ impl<T> Snaplog<T> {
 
     /// Reserve space for `n` additional elements.
     ///
+    /// # Errors
+    /// Returns an error if [`Vec::try_reserve`] failed.
+    ///
     /// # Examples
     /// ```
     /// # use snaplog::full::Snaplog;

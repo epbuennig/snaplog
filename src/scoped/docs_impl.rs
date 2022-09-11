@@ -1,7 +1,7 @@
 use super::IntoScoped;
 
 #[doc(hidden)]
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct __Prefixed {
     pub prefix: Option<&'static str>,
     pub content: &'static str,
