@@ -4,7 +4,6 @@
 //! # Examples
 //! ```
 //! # use snaplog::{full::Snaplog, Select};
-//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let mut snaplog: Snaplog<_> = vec![
 //!     "content".to_string(),
 //!     "new-content".to_string()
@@ -21,9 +20,13 @@
 //!
 //! assert_eq!(snaplog.history(), ["final-content"]);
 //! assert_eq!(snaplog.has_changes(), false);
-//! # Ok(())
-//! # }
+//! # Ok::<_, Box<dyn std::error::Error>>(())
 //! ```
+
+use std::{
+    collections::TryReserveError,
+    ops::{Bound, RangeBounds},
+};
 
 use crate::{EmptyHistoryError, Select, INVARIANT_UNWRAP};
 
@@ -34,7 +37,6 @@ use crate::{EmptyHistoryError, Select, INVARIANT_UNWRAP};
 /// # Examples
 /// ```
 /// # use snaplog::{full::Snaplog, Select};
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let mut snaplog: Snaplog<_> = vec![
 ///     "/path/to/file".to_string(),
 ///     "/path/to/file-backup".to_string(),
@@ -54,8 +56,7 @@ use crate::{EmptyHistoryError, Select, INVARIANT_UNWRAP};
 ///
 /// assert_eq!(snaplog.history(), ["/path/file"]);
 /// assert_eq!(snaplog.has_changes(), false);
-/// # Ok(())
-/// # }
+/// # Ok::<_, Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Debug)]
 #[repr(transparent)]
@@ -446,14 +447,12 @@ impl<T> Snaplog<T> {
     /// # Examples
     /// ```
     /// # use snaplog::full::Snaplog;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let mut snaplog = Snaplog::try_from_history(0..=10)?;
     /// let history = snaplog.history_mut();
     ///
     /// history[0] = 10;
     /// assert_eq!(snaplog.history(), [10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-    /// # Ok(())
-    /// # }
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
     pub fn history_mut(&mut self) -> &mut [T] {
@@ -470,42 +469,36 @@ impl<T> Snaplog<T> {
     /// # Examples
     /// ```
     /// # use snaplog::full::Snaplog;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let mut snaplog = Snaplog::try_from_history(0..=10)?;
     ///
     /// snaplog.drain(2..=8);
     /// assert_eq!(snaplog.history(), [0, 1, 9, 10]);
-    /// # Ok(())
-    /// # }
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
     /// The unbounded range is reinterpreted as starting at `1`:
     /// ```
     /// # use snaplog::full::Snaplog;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let mut snaplog = Snaplog::try_from_history(0..=10)?;
     /// snaplog.drain(..);
     /// assert_eq!(snaplog.history(), [0]);
-    /// # Ok(())
-    /// # }
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
     /// The only invalid lower bound is `0`:
     /// ```should_panic
     /// # use snaplog::full::Snaplog;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let mut snaplog = Snaplog::try_from_history(0..=10)?;
     /// snaplog.drain(0..);
-    /// # Ok(())
-    /// # }
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
     pub fn drain<R>(&mut self, range: R) -> impl Iterator<Item = T> + '_
     where
-        R: std::ops::RangeBounds<usize>,
+        R: RangeBounds<usize>,
     {
         let start_bound = match range.start_bound() {
-            std::ops::Bound::Included(&idx) if idx == 0 => panic!("cannot drain initial element"),
-            std::ops::Bound::Included(&idx) => std::ops::Bound::Included(idx),
-            std::ops::Bound::Excluded(&idx) => std::ops::Bound::Excluded(idx),
-            std::ops::Bound::Unbounded => std::ops::Bound::Excluded(0),
+            Bound::Included(&idx) if idx == 0 => panic!("cannot drain initial element"),
+            Bound::Included(&idx) => Bound::Included(idx),
+            Bound::Excluded(&idx) => Bound::Excluded(idx),
+            Bound::Unbounded => Bound::Excluded(0),
         };
 
         self.history
@@ -525,6 +518,7 @@ impl<T> Snaplog<T> {
     /// assert_eq!(snaplog.initial(), &"c");
     /// assert_eq!(snaplog.has_changes(), false);
     /// ```
+    #[inline]
     pub fn clear_history(&mut self) {
         self.history.drain(..self.history.len() - 1);
     }
@@ -552,7 +546,6 @@ impl<T> Snaplog<T> {
     /// # Examples
     /// ```
     /// # use snaplog::full::Snaplog;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let mut snaplog = Snaplog::try_from_history(0..=10)?;
     ///
     /// let mut copy = vec![];
@@ -561,8 +554,7 @@ impl<T> Snaplog<T> {
     /// }
     ///
     /// assert_eq!(copy, [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
-    /// # Ok(())
-    /// # }
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
     pub fn iter(&self) -> Iter<'_, T> {
@@ -574,7 +566,6 @@ impl<T> Snaplog<T> {
     /// # Examples
     /// ```
     /// # use snaplog::full::Snaplog;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let mut snaplog = Snaplog::try_from_history(0..=10)?;
     ///
     /// for snapshot in snaplog.iter_mut().filter(|&&mut n| n % 2 == 0) {
@@ -582,8 +573,7 @@ impl<T> Snaplog<T> {
     /// }
     ///
     /// assert_eq!(snaplog.history(), [2, 1, 2, 3, 2, 5, 2, 7, 2, 9, 2]);
-    /// # Ok(())
-    /// # }
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
     pub fn iter_mut(&mut self) -> IterMut<'_, T> {
@@ -705,7 +695,6 @@ impl<T> Snaplog<T> {
     /// # Examples
     /// ```
     /// # use snaplog::full::Snaplog;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let mut snaplog = Snaplog::try_from_history(0..=10)?;
     ///
     /// // SAFETY: no elements are removed
@@ -716,8 +705,7 @@ impl<T> Snaplog<T> {
     /// inner.push(300);
     ///
     /// assert_eq!(snaplog.history(), [0, 4, 100, 200, 7, 8, 9, 10, 300]);
-    /// # Ok(())
-    /// # }
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
     pub unsafe fn history_mut_vec(&mut self) -> &mut Vec<T> {
