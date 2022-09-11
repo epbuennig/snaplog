@@ -6,6 +6,8 @@
 //! the type, the `ScopedSnaplog` takes care of the rest.
 //!
 //! # Examples
+//! All examples in this module assume this type is given.
+//!
 //! Given a type like this:
 //! ```
 //! use snaplog::scoped::IntoScoped;
@@ -46,9 +48,7 @@
 //!
 //! You can use the [`Snaplog`] like this:
 //! ```
-#![doc = include_str!("docs_impl.txt")]
-//! # use snaplog::{Select, scoped::Snaplog};
-//! # fn main() -> Result<(), Box<dyn std::error::Error>> {
+//! # use snaplog::{Select, scoped::{Snaplog, __Prefixed as Prefixed}};
 //! let mut snaplog = Snaplog::new(Prefixed::new("prefix:content"));
 //! assert_eq!(snaplog.has_changes(), false);
 //!
@@ -64,14 +64,12 @@
 //!
 //! assert_eq!(snaplog.history(), ["new"]);
 //! assert_eq!(snaplog.has_changes(), false);
-//! # Ok(())
-//! # }
+//! # Ok::<_, Box<dyn std::error::Error>>(())
 //! ```
 //!
 //! And when all changes are done you can simply recombine the parts:
 //! ```
-//! # use snaplog::{Select, scoped::Snaplog};
-#![doc = include_str!("docs_impl.txt")]
+//! # use snaplog::{Select, scoped::{Snaplog, __Prefixed as Prefixed}};
 //! # let mut snaplog = Snaplog::new(Prefixed::new("prefix:content"));
 //! # snaplog.record("content-copy");
 //! # snaplog.record("new");
@@ -80,6 +78,11 @@
 
 use crate::{full, EmptyHistoryError, Select};
 use std::ops::RangeBounds;
+
+mod docs_impl;
+
+#[doc(hidden)]
+pub use docs_impl::__Prefixed;
 
 /// A trait for types that can be scoped into parts to apply changes only partially. See
 /// [`ScopedSnaplog`][Snaplog] for examples.
@@ -100,12 +103,8 @@ pub trait IntoScoped {
 /// A [`Snaplog`][full] that is scoped to only part of of a type.
 ///
 /// # Examples
-/// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-/// implementation.
 /// ```
-#[doc = include_str!("docs_impl.txt")]
-/// # use snaplog::{Select, scoped::Snaplog};
-/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// # use snaplog::{Select, scoped::{Snaplog, __Prefixed as Prefixed}};
 /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:content"));
 /// assert_eq!(snaplog.has_changes(), false);
 ///
@@ -121,8 +120,7 @@ pub trait IntoScoped {
 ///
 /// assert_eq!(snaplog.history(), ["new"]);
 /// assert_eq!(snaplog.has_changes(), false);
-/// # Ok(())
-/// # }
+/// # Ok::<_, Box<dyn std::error::Error>>(())
 /// ```
 ///
 /// [full]: full::Snaplog
@@ -137,11 +135,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Creates a new [`Snaplog`] from the given `initial` snapshot with no recorded changes.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let snaplog = Snaplog::new(Prefixed::new("prefix:content"));
     ///
     /// assert_eq!(snaplog.initial(), &"content");
@@ -164,11 +159,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns an error if `history` was empty.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// assert!(Snaplog::<Prefixed>::try_from_vec(vec!["content"], None).is_ok());
     /// assert!(Snaplog::<Prefixed>::try_from_vec(vec![], Some("prefix")).is_err());
     /// ```
@@ -189,18 +181,14 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Panics if `history` was empty.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let snaplog: Snaplog<Prefixed> = Snaplog::from_vec(vec![""], None);
     /// ```
     ///
     /// This panics:
     /// ```should_panic
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let snaplog: Snaplog<Prefixed> = Snaplog::from_vec(vec![], Some("Prefix"));
     /// ```
     #[inline]
@@ -219,11 +207,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns an error if `history` was empty.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// assert!(Snaplog::<Prefixed>::try_from_history(["a", "b", "c"], None).is_ok());
     /// assert!(Snaplog::<Prefixed>::try_from_history(std::iter::empty(), Some("a")).is_err());
     /// ```
@@ -243,18 +228,14 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Panics if `history` was empty.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let snaplog: Snaplog<Prefixed> = Snaplog::from_history(["a", "b", "c"], None);
     /// ```
     ///
     /// This panics:
     /// ```should_panic
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let snaplog: Snaplog<Prefixed> = Snaplog::from_history(std::iter::empty(), Some("prefix"));
     /// ```
     #[inline]
@@ -271,11 +252,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns a reference to the internal [`Snaplog`].
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::{full, scoped::Snaplog};
+    /// # use snaplog::{full, scoped::{Snaplog, __Prefixed as Prefixed}};
     /// let snaplog = Snaplog::new(Prefixed::new("prefix:content"));
     ///
     /// assert_eq!(snaplog.scope(), &full::Snaplog::new("content"));
@@ -287,11 +265,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns a mutable reference to the internal [`full::Snaplog`].
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::{full, scoped::Snaplog};
+    /// # use snaplog::{full, scoped::{Snaplog, __Prefixed as Prefixed}};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:content"));
     ///
     /// assert_eq!(snaplog.scope(), &mut full::Snaplog::new("content"));
@@ -303,11 +278,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns a reference to the ignored part of this [`Snaplog`].
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let snaplog = Snaplog::new(Prefixed::new("prefix:content"));
     ///
     /// assert_eq!(snaplog.ignored(), &Some("prefix"));
@@ -319,11 +291,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns a mutable reference to the internal [`full::Snaplog`].
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::{full, scoped::Snaplog};
+    /// # use snaplog::{full, scoped::{Snaplog, __Prefixed as Prefixed}};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:content"));
     ///
     /// assert_eq!(snaplog.into_scope(), full::Snaplog::new("content"));
@@ -338,11 +307,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Records a snapshot in this [`Snaplog`].
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record("b");
@@ -357,11 +323,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Records multiple snapshots in this [`Snaplog`].
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record_all(["b", "c", "d"]);
@@ -377,11 +340,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Records a change to the current element in this [`Snaplog`].
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record_change(|prev| { assert_eq!(prev, &"a"); "b" });
@@ -402,11 +362,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns the inner error if the closure failed.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.try_record_change(|prev| { assert_eq!(prev, &"a"); Ok("b") })?;
@@ -426,11 +383,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Records multiple successive changes to the current element in this [`Snaplog`].
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record_changes_all(&mut ["b", "c", "d"], |change, _| *change);
@@ -446,11 +400,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns whether or not there are any changes recorded in this [`Snaplog`].
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// assert_eq!(snaplog.has_changes(), false);
@@ -466,11 +417,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns the initial element.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record("b");
@@ -485,11 +433,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns the element at the given [`Select`].
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::{Select, scoped::Snaplog};
+    /// # use snaplog::{Select, scoped::{Snaplog, __Prefixed as Prefixed}};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record("b");
@@ -504,11 +449,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// there are no none.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record("b");
@@ -523,11 +465,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns the initial element.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record("b");
@@ -542,11 +481,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns the element at the given [`Select`].
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::{Select, scoped::Snaplog};
+    /// # use snaplog::{Select, scoped::{Snaplog, __Prefixed as Prefixed}};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record("b");
@@ -561,11 +497,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// there are no none.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record("b");
@@ -580,11 +513,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Clones the element at the given [`Select`].
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::{scoped::Snaplog, Select};
+    /// # use snaplog::{scoped::{Snaplog, __Prefixed as Prefixed}, Select};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record("b");
@@ -604,11 +534,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns the full history recorded in this [`Snaplog`], including the initial element.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record("b");
@@ -623,12 +550,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns a mutable reference to the underlying `history`.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog: Snaplog<Prefixed> = Snaplog::try_from_history(
     ///     ["a", "b", "c", "d", "e"],
     ///     None,
@@ -637,8 +560,7 @@ impl<T: IntoScoped> Snaplog<T> {
     ///
     /// history[0] = "g";
     /// assert_eq!(snaplog.history(), ["g", "b", "c", "d", "e"]);
-    /// # Ok(())
-    /// # }
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
     pub fn history_mut(&mut self) -> &mut [T::Scope] {
@@ -653,12 +575,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Panics if the lower or upper bound are out of range.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog: Snaplog<Prefixed> = Snaplog::try_from_history(
     ///     ["a", "b", "c", "d", "e"],
     ///     None,
@@ -666,31 +584,24 @@ impl<T: IntoScoped> Snaplog<T> {
     ///
     /// snaplog.drain(2..=3);
     /// assert_eq!(snaplog.history(), ["a", "b", "e"]);
-    /// # Ok(())
-    /// # }
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
     /// The unbounded range is reinterpreted as starting at `1`:
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// # let mut snaplog: Snaplog<Prefixed> = Snaplog::try_from_history(["a", "b", "c", "d", "e"],
     /// # None)?;
     /// snaplog.drain(..);
     /// assert_eq!(snaplog.history(), ["a"]);
-    /// # Ok(())
-    /// # }
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
     /// The only invalid lower bound is `0`:
     /// ```should_panic
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// # let mut snaplog: Snaplog<Prefixed> = Snaplog::try_from_history(["a", "b", "c", "d", "e"],
     /// # None)?;
     /// snaplog.drain(0..);
-    /// # Ok(())
-    /// # }
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
     pub fn drain<'r, R>(&'r mut self, range: R) -> impl Iterator<Item = T::Scope> + 'r
     where
@@ -702,11 +613,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Wipe the recorded history, keeping only the current element as the new initial element.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record("b");
@@ -722,11 +630,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Wipe the recorded changes, keeping only the initial element.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record("b");
@@ -743,12 +648,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns an iterator over references of the whole underling history.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog: Snaplog<Prefixed> = Snaplog::try_from_history(
     ///     ["a", "b", "c", "d", "e"],
     ///     None,
@@ -760,8 +661,7 @@ impl<T: IntoScoped> Snaplog<T> {
     /// }
     ///
     /// assert_eq!(copy, ["a", "b", "c", "d", "e"]);
-    /// # Ok(())
-    /// # }
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
     pub fn iter(&self) -> Iter<'_, T> {
@@ -771,12 +671,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Returns an iterator over mutable references of the whole underling history.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog: Snaplog<Prefixed> = Snaplog::try_from_history(
     ///     ["a", "b", "c", "d", "e"],
     ///     None,
@@ -787,8 +683,7 @@ impl<T: IntoScoped> Snaplog<T> {
     /// }
     ///
     /// assert_eq!(snaplog.history(), ["f", "b", "c", "f", "e"]);
-    /// # Ok(())
-    /// # }
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
     pub fn iter_mut(&mut self) -> IterMut<'_, T> {
@@ -798,11 +693,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Unwrap the [`Snaplog`] into it's initial snapshot.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record("b");
@@ -816,11 +708,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Unwrap the [`Snaplog`] into it's current snapshot.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record("b");
@@ -834,11 +723,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Unwrap the [`Snaplog`] into it's current snapshot.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::{Select, scoped::Snaplog};
+    /// # use snaplog::{Select, scoped::{Snaplog, __Prefixed as Prefixed}};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record("b");
@@ -852,11 +738,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// Unwrap the [`Snaplog`] into it's history.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::{full, scoped::Snaplog};
+    /// # use snaplog::{full, scoped::{Snaplog, __Prefixed as Prefixed}};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     ///
     /// snaplog.record("b");
@@ -880,8 +763,7 @@ impl<T: IntoScoped> Snaplog<T> {
     ///
     /// # Examples
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// // this is fine
     /// let snaplog: Snaplog<Prefixed> = unsafe {
     ///     Snaplog::from_vec_unchecked(vec!["content"], None)
@@ -908,8 +790,7 @@ impl<T: IntoScoped> Snaplog<T> {
     ///
     /// # Examples
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// // this is fine
     /// let snaplog: Snaplog<Prefixed> = unsafe {
     ///     Snaplog::from_history_unchecked(["a", "b", "c"], None)
@@ -938,9 +819,7 @@ impl<T: IntoScoped> Snaplog<T> {
     ///
     /// # Examples
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog: Snaplog<Prefixed> = Snaplog::try_from_history(
     ///     ["a", "b", "c", "d", "e", "f", "g"],
     ///     None,
@@ -954,8 +833,7 @@ impl<T: IntoScoped> Snaplog<T> {
     /// inner.push("j");
     ///
     /// assert_eq!(snaplog.history(), ["a", "e", "h", "i", "j"]);
-    /// # Ok(())
-    /// # }
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
     pub unsafe fn history_mut_vec(&mut self) -> &mut Vec<T::Scope> {
@@ -971,12 +849,8 @@ impl<T: IntoScoped> Snaplog<T> {
     /// uphold invariants over the ignored part's mutation.
     ///
     /// # Examples
-    /// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-    /// implementation.
     /// ```
-    #[doc = include_str!("docs_impl.txt")]
-    /// # use snaplog::scoped::Snaplog;
-    /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog: Snaplog<Prefixed> = Snaplog::try_from_history(
     ///     ["a", "b", "c", "d", "e"],
     ///     None,
@@ -987,8 +861,7 @@ impl<T: IntoScoped> Snaplog<T> {
     /// *inner = Some("new_prefix");
     ///
     /// assert_eq!(snaplog.into_current(), Prefixed::new("new_prefix:e"));
-    /// # Ok(())
-    /// # }
+    /// # Ok::<_, Box<dyn std::error::Error>>(())
     /// ```
     #[inline]
     pub unsafe fn ignored_mut(&mut self) -> &mut T::Ignored {
@@ -1042,11 +915,8 @@ impl<T: IntoScoped> std::iter::Extend<T::Scope> for Snaplog<T> {
 /// An [`Iterator`] over all snapshot scopes and references to the ignored part.
 ///
 /// # Examples
-/// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-/// implementation.
 /// ```
-#[doc = include_str!("docs_impl.txt")]
-/// # use snaplog::scoped::{Snaplog, IntoScoped};
+/// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed, IntoScoped};
 /// # type Scope = &'static str;
 /// # type Ignored = Option<&'static str>;
 /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:content"));
@@ -1110,11 +980,8 @@ where
 /// An [`Iterator`] over references to snapshot scopes and references to the ignored part.
 ///
 /// # Examples
-/// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-/// implementation.
 /// ```
-#[doc = include_str!("docs_impl.txt")]
-/// # use snaplog::scoped::{Snaplog, IntoScoped};
+/// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed, IntoScoped};
 /// # type Scope = &'static str;
 /// # type Ignored = Option<&'static str>;
 /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:content"));
@@ -1166,11 +1033,8 @@ impl<'cl, T: IntoScoped> IntoIterator for &'cl Snaplog<T> {
 /// An [`Iterator`] over mutable references to snapshot scopes and references to the ignored part.
 ///
 /// # Examples
-/// `Prefixed` is an example type, refer to the [module level documentation][self] for it's
-/// implementation.
 /// ```
-#[doc = include_str!("docs_impl.txt")]
-/// # use snaplog::scoped::{Snaplog, IntoScoped};
+/// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed, IntoScoped};
 /// # type Scope = &'static str;
 /// # type Ignored = Option<&'static str>;
 /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:content"));
