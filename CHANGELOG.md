@@ -2,12 +2,17 @@
 
 ---
 ## [Unreleased]
+
+
+---
+## [0.3.2]
 ### Added
 - `Snaplog::try_record_change` for fallible changes
 - `Snaplog::{try_}reserve` for reserving additional space
 
 ### Changed
 - removed inline attributes
+
 
 ---
 ## [0.3.1]
@@ -72,7 +77,8 @@
 Initial Release
 
 
-[Unreleased]: https://github.com/epbuennig/snaplog/compare/v0.3.1...master
+[Unreleased]: https://github.com/epbuennig/snaplog/compare/v0.3.2...master
+[0.3.2]: https://github.com/epbuennig/snaplog/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/epbuennig/snaplog/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/epbuennig/snaplog/compare/v0.2.1...v0.3.0
 [0.2.1]: https://github.com/epbuennig/snaplog/compare/v0.2.0...v0.2.1
