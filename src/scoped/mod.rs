@@ -76,8 +76,11 @@
 //! assert_eq!(snaplog.into_current(), Prefixed::new("prefix:new"));
 //! ```
 
-use crate::{full, EmptyHistoryError, Select};
-use std::{collections::TryReserveError, ops::RangeBounds};
+use crate::full;
+use crate::{EmptyHistoryError, Select};
+
+use std::collections::TryReserveError;
+use std::ops::RangeBounds;
 
 mod docs_impl;
 

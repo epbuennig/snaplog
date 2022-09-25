@@ -23,12 +23,10 @@
 //! # Ok::<_, Box<dyn std::error::Error>>(())
 //! ```
 
-use std::{
-    collections::TryReserveError,
-    ops::{Bound, RangeBounds},
-};
-
 use crate::{EmptyHistoryError, Select, INVARIANT_UNWRAP};
+
+use std::collections::TryReserveError;
+use std::ops::{Bound, RangeBounds};
 
 /// A struct for recording the history of changes done to a given `T` by storing a snapshot after
 /// each change. The history of snapshots is stored in [`Vec`] in ascending order, that means the
