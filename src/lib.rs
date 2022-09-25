@@ -34,6 +34,9 @@ pub mod full;
 pub use full::Snaplog;
 
 pub mod scoped;
+pub use scoped::AsThinScoped;
+pub use scoped::AsThinScopedMut;
+pub use scoped::IntoScoped;
 pub use scoped::Snaplog as ScopedSnaplog;
 
 const INVARIANT_UNWRAP: &str = "must have at least one element";

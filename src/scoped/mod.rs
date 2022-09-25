@@ -103,6 +103,44 @@ pub trait IntoScoped {
     fn from_scoped(scope: Self::Scope, ignored: Self::Ignored) -> Self;
 }
 
+/// A trait for [`T: IntoScoped`][IntoScoped] that can create thin immutable reference wrappers from
+/// references to their parts which behave like a reference to `Self`.
+///
+/// This trait has correctness requirements similar to [`Borrow`][0], if a trait like [`Eq`],
+/// [`Ord`] or [`Hash`] is implemented for `T`, then the same conditions formulated by `Borrow` must
+/// hold.
+///
+/// [0]: std::borrow::Borrow
+pub trait AsThinScoped: IntoScoped {
+    /// An immutable thin reference type that behaves like `&Self`.
+    type ThinScoped<'this>;
+
+    /// Creates [`Self::ThinScoped`] from references to it's scope and ignored part.
+    fn as_thin_scoped<'a>(
+        scope: &'a Self::Scope,
+        ignored: &'a Self::Ignored,
+    ) -> Self::ThinScoped<'a>;
+}
+
+/// A trait for [`T: IntoScoped`][IntoScoped] that can create thin mutable reference wrappers from
+/// mutable references to their parts which behave like a reference to `Self`.
+///
+/// This trait has correctness requirements similar to [`BorrowMut`][0], if a trait like [`Eq`],
+/// [`Ord`] or [`Hash`] is implemented for `T`, then the same conditions formulated by `BorrowMut`
+/// must hold.
+///
+/// [0]: std::borrow::BorrowMut
+pub trait AsThinScopedMut: AsThinScoped {
+    /// A mutable thin reference type that behaves like `&mut Self`.
+    type ThinScopedMut<'this>;
+
+    /// Creates [`Self::ThinScopedMut`] from mutable references to it's scope and ignored part.
+    fn as_thin_scoped_mut<'a>(
+        scope: &'a mut Self::Scope,
+        ignored: &'a mut Self::Ignored,
+    ) -> Self::ThinScopedMut<'a>;
+}
+
 /// A [`Snaplog`][full] that is scoped to only part of of a type.
 ///
 /// # Examples
@@ -763,6 +801,52 @@ impl<T: IntoScoped> Snaplog<T> {
     /// ```
     pub fn into_inner(self) -> (full::Snaplog<T::Scope>, T::Ignored) {
         (self.full, self.ignored)
+    }
+}
+
+/// Thin implementations.
+impl<T: IntoScoped> Snaplog<T> {
+    /// Constructs a [`T::ThinScoped`][0] reference wrapper of the element at the given [`Select`].
+    ///
+    /// [0]: AsThinScoped::ThinScoped
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::{scoped::{Snaplog, __Prefixed as Prefixed}, Select};
+    /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
+    ///
+    /// snaplog.record("b");
+    /// snaplog.record("c");
+    /// // note that the equality impl of T::ThinScoped and &T is given for this example
+    /// assert_eq!(snaplog.thin_snapshot_at(Select::At(1)), &Prefixed::new("prefix:b"));
+    /// ```
+    pub fn thin_snapshot_at(&self, select: Select) -> T::ThinScoped<'_>
+    where
+        T: AsThinScoped,
+    {
+        T::as_thin_scoped(self.snapshot_at(select), &self.ignored)
+    }
+
+    /// Constructs a [`T::ThinScopedMut`][0] reference wrapper of the element at the given
+    /// [`Select`].
+    ///
+    /// [0]: AsThinScopedMut::ThinScopedMut
+    ///
+    /// # Examples
+    /// ```
+    /// # use snaplog::{scoped::{Snaplog, __Prefixed as Prefixed}, Select};
+    /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
+    ///
+    /// snaplog.record("b");
+    /// snaplog.record("c");
+    /// // note that the equality impl of T::ThinScopedMut and &T is given for this example
+    /// assert_eq!(snaplog.thin_snapshot_at_mut(Select::At(1)), &mut Prefixed::new("prefix:b"));
+    /// ```
+    pub fn thin_snapshot_at_mut(&mut self, select: Select) -> T::ThinScopedMut<'_>
+    where
+        T: AsThinScopedMut,
+    {
+        T::as_thin_scoped_mut(self.full.snapshot_at_mut(select), &mut self.ignored)
     }
 }
 
