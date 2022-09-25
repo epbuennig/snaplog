@@ -635,7 +635,7 @@ impl<T: IntoScoped> Snaplog<T> {
     ///
     /// # Examples
     /// ```
-    /// # use snaplog::scoped::{Snaplog, Prefixed};
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     /// snaplog.reserve(10);
     /// ```
@@ -650,7 +650,7 @@ impl<T: IntoScoped> Snaplog<T> {
     ///
     /// # Examples
     /// ```
-    /// # use snaplog::scoped::{Snaplog, Prefixed};
+    /// # use snaplog::scoped::{Snaplog, __Prefixed as Prefixed};
     /// let mut snaplog = Snaplog::new(Prefixed::new("prefix:a"));
     /// snaplog.try_reserve(10)?;
     /// # Ok::<_, Box<dyn std::error::Error>>(())
