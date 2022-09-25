@@ -1,4 +1,6 @@
-use super::IntoScoped;
+#![allow(dead_code)]
+
+use crate::{AsThinScoped, AsThinScopedMut, IntoScoped};
 
 #[doc(hidden)]
 #[derive(Debug, PartialEq, Eq)]
@@ -30,6 +32,58 @@ impl IntoScoped for __Prefixed {
         Self {
             prefix: ignored,
             content: scope,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Ref<'p> {
+    prefix: &'p Option<&'static str>,
+    content: &'p &'static str,
+}
+
+impl<'p> PartialEq<&__Prefixed> for Ref<'p> {
+    fn eq(&self, other: &&__Prefixed) -> bool {
+        *self.prefix == other.prefix && *self.content == other.content
+    }
+}
+
+#[derive(Debug)]
+pub struct RefMut<'p> {
+    prefix: &'p mut Option<&'static str>,
+    content: &'p mut &'static str,
+}
+
+impl<'p> PartialEq<&__Prefixed> for RefMut<'p> {
+    fn eq(&self, other: &&__Prefixed) -> bool {
+        *self.prefix == other.prefix && *self.content == other.content
+    }
+}
+
+impl AsThinScoped for __Prefixed {
+    type ThinScoped<'this> = Ref<'this>;
+
+    fn as_thin_scoped<'a>(
+        scope: &'a Self::Scope,
+        ignored: &'a Self::Ignored,
+    ) -> Self::ThinScoped<'a> {
+        Ref {
+            content: scope,
+            prefix: ignored,
+        }
+    }
+}
+
+impl AsThinScopedMut for __Prefixed {
+    type ThinScopedMut<'this> = RefMut<'this>;
+
+    fn as_thin_scoped_mut<'a>(
+        scope: &'a mut Self::Scope,
+        ignored: &'a mut Self::Ignored,
+    ) -> Self::ThinScopedMut<'a> {
+        RefMut {
+            content: scope,
+            prefix: ignored,
         }
     }
 }
