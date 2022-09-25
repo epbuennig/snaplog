@@ -1,11 +1,15 @@
 # Changelog
 
 ---
-## [Unreleased]
+## [Unreleased] - ???
+### Added
+- `scoped::IntoScoped` re-export at `lib`
+- `scoped::AsThinScoped{Mut}` for zero reducing clones in user code
+- `scoped::Snaplog::thin_snaplog_at{_mut}` using `scoped::AsThinScoped{Mut}`
 
 
 ---
-## [0.3.2]
+## [0.3.2] - 2022-09-11
 ### Added
 - `Snaplog::try_record_change` for fallible changes
 - `Snaplog::{try_}reserve` for reserving additional space
@@ -15,7 +19,7 @@
 
 
 ---
-## [0.3.1]
+## [0.3.1] - 2022-07-16
 ### Added
 - `Snaplog::snapshot_at`
 - `Snaplog::initial_mut` (these are added for consistency but will be removed as well as their
@@ -31,11 +35,11 @@
 
 
 ---
-## [0.3.0]
+## [0.3.0] - 2022-07-14
 ### Added
 - `scoped::Snaplog`
 
-### Changes
+### Changed
 - more consistent documentation
 - relaxed bounds on `[try_]from_history[_unchecked]` form `Iterator` to `IntoIterator`
 - more consistent naming (previous name to new name):
@@ -44,7 +48,7 @@
 
 
 ---
-## [0.2.1]
+## [0.2.1] - 2022-07-14
 ### Fixed
 - made iter types and module public
 
@@ -60,7 +64,7 @@
 - `IndexMut` impl for `Snaplog`
 - `into_initial`, `into_snapshot_at`, `into_current`
 
-### Changes
+### Changed
 - more consistent documentation
 - more consistent naming (previous name to new name):
   - `Snaplog::from_history` => `Snaplog::from_vec`
